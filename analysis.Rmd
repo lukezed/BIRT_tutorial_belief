@@ -309,7 +309,6 @@ data_3 <- readRDS("data/processed/data_3.rds")
 ```{r}
 
 # --- 1. GRSM (Family: acat) on Data 3 ---
-# Use existing 2PL formulas and priors
 
 # CT-GRSM (New)
 ct_grsm_new <- brm(
@@ -317,7 +316,7 @@ ct_grsm_new <- brm(
   data = data_3,
   family = brmsfamily("acat", "logit"),
   prior = priors_ct_2pl,
-  backend = "cmdstanr",  # add this to avoid crushing
+  backend = "cmdstanr",  
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/ct_grsm_new"
@@ -331,13 +330,13 @@ bf_grsm_new <- brm(
   data = data_3,
   family = brmsfamily("acat", "logit"),
   prior = priors_bf_2pl,
-  backend = "cmdstanr",  # add this to avoid crushing
+  backend = "cmdstanr",  
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/bf_grsm_new"
 )
-bf_grsm_new <- add_criterion(bf_grsm_new, "loo", overwrite = TRUE)
-saveRDS(bf_grsm_new, "models/bf_grsm_new.rds")
+bf_grsm_new <- add_criterion(bf_grsm_new, "loo")
+
 
 # --- 2. GRM (Family: cumulative) on Data 3 ---
 
@@ -345,9 +344,9 @@ saveRDS(bf_grsm_new, "models/bf_grsm_new.rds")
 ct_grm_new <- brm(
   formula = bf_ct_2pl,
   data = data_3,
-  family = brmsfamily("cumulative", "logit"), # Changed to cumulative
+  family = brmsfamily("cumulative", "logit"), # Changed to cumulative for grm setting
   prior = priors_ct_2pl,
-  backend = "cmdstanr",  # add this to avoid crushing
+  backend = "cmdstanr", 
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/ct_grm_new"
@@ -359,9 +358,9 @@ saveRDS(ct_grm_new, "models/ct_grm_new.rds")
 bf_grm_new <- brm(
   formula = bf_bf_2pl,
   data = data_3,
-  family = brmsfamily("cumulative", "logit"), # Changed to cumulative
+  family = brmsfamily("cumulative", "logit"), 
   prior = priors_bf_2pl,
-  backend = "cmdstanr",  # add this to avoid crushing
+  backend = "cmdstanr", 
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/bf_grm_new"
@@ -373,44 +372,44 @@ saveRDS(bf_grm_new, "models/bf_grm_new.rds")
 # Formula: Needs cs(1) to allow thresholds to vary by item (Partial Credit)
 
 # Define PCM Formulas
-bf_ct_pcm <- bf(
+bf_ct_gpcm <- bf(
   response ~ 1 + (cs(1) | item) + (0 + dim_m + dim_l + dim_p | id),
   disc ~ 1 + (1 | item)
 )
 
-bf_bf_pcm <- bf(
+bf_bf_gpcm <- bf(
   response ~ 1 + (cs(1) | item) + 
     (1 | id) + (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id),
   disc ~ 1 + (1 | item)
 )
 
 # Fit CT-PCM (New)
-ct_pcm_new <- brm(
-  formula = bf_ct_pcm,
+ct_gpcm_new <- brm(
+  formula = bf_ct_gpcm,
   data = data_3,
   family = brmsfamily("acat", "logit"),
-  prior = priors_ct_2pl, # Reuse same priors
-  backend = "cmdstanr",  # add this to avoid crushing
+  prior = priors_ct_2pl, 
+  backend = "cmdstanr",  
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
-  file = "models/ct_pcm_new"
+  file = "models/ct_gpcm_new"
 )
-ct_pcm_new <- add_criterion(ct_pcm_new, "loo", overwrite = TRUE)
-saveRDS(ct_pcm_new, "models/ct_pcm_new.rds")
+ct_gpcm_new <- add_criterion(ct_gpcm_new, "loo", overwrite = TRUE)
+saveRDS(ct_gpcm_new, "models/ct_gpcm_new.rds")
 
-# Fit BF-PCM (New)
-bf_pcm_new <- brm(
-  formula = bf_bf_pcm,
+# Fit BF-GPCM 
+bf_gpcm_new <- brm(
+  formula = bf_bf_gpcm,
   data = data_3,
   family = brmsfamily("acat", "logit"),
-  prior = priors_bf_2pl, # Reuse same priors
-  backend = "cmdstanr",  # add this to avoid crushing
+  prior = priors_bf_2pl, 
+  backend = "cmdstanr",  
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
-  file = "models/bf_pcm_new"
+  file = "models/bf_gpcm_new"
 )
-bf_pcm_new <- add_criterion(bf_pcm_new, "loo", overwrite = TRUE)
-saveRDS(bf_pcm_new, "models/bf_pcm_new.rds")
+bf_gpcm_new <- add_criterion(bf_gpcm_new, "loo", overwrite = TRUE)
+saveRDS(bf_gpcm_new, "models/bf_gpcm_new.rds")
 ```
 
 
@@ -419,16 +418,64 @@ saveRDS(bf_pcm_new, "models/bf_pcm_new.rds")
 loo_compare(
   ct_grsm_new, bf_grsm_new, 
   ct_grm_new,  bf_grm_new,
-  ct_pcm_new,  bf_pcm_new,
+  ct_gpcm_new,  bf_gpcm_new,
   criterion = "loo"
 )
 
-
-# Check weights
-loo_model_weights(list(
-  CT_GRSM = ct_grsm_new, BF_GRSM = bf_grsm_new,
-  CT_GRM  = ct_grm_new,  BF_GRM  = bf_grm_new,
-  CT_PCM  = ct_pcm_new,  BF_PCM  = bf_pcm_new
-))         
+model_weights (ct_grm_new,  bf_grm_new)
 ```
+
+# Summary for final choice
+```{r}
+source("scripts/07_fig6.R")
+
+fig_6
+```
+
+
+# DIF models
+```{r}
+bf_dif <- bf(
+  response ~ 1 + gender + (0 + gender | item) + 
+    (1 | id) + (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id),
+  disc ~ 1 + (1 | item)
+)
+
+bf_grm_dif <- brm(
+  formula = bf_dif,
+  data = data_3,
+  family = brmsfamily("cumulative", "logit"),
+  prior = priors_bf_2pl,  
+  backend = "cmdstanr",
+  chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/bf_grm_dif"
+)
+
+```
+
+
+
+```{r}
+
+bf_dif2 <- bf(
+  response ~ 1 + gender + District + YearG + 
+    (1 + gender + District | item) + 
+    (1 | id) + (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id),
+  disc ~ 1 + (1 | item)
+)
+
+# Fit Model
+bf_grm_dif2 <- brm(
+  formula = bf_dif2,
+  data = data_3,
+  family = brmsfamily("cumulative", "logit"),
+  prior = priors_bf_2pl, 
+  backend = "cmdstanr",
+  chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/bf_grm_dif2"
+)
+```
+
 
