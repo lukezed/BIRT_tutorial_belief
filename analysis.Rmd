@@ -1,0 +1,434 @@
+---
+title: "belief_tutorial"
+author: "Chi Zhang"
+date: "2025-12-14"
+output: html_document
+---
+
+# Setup and Package/dataset Loading
+
+```{r setup, message=FALSE, warning=FALSE}
+# Load packages
+source("scripts/00_packages.R")
+```
+
+# Theoretical Hypotheses and Model Formulas
+
+```{r}
+# 1. Unidimensional IRT (UIRT)
+# Hypothesis 1: All items measure a single latent trait (General Equity Belief)
+bf_uni <- bf(
+  response ~ 1 + (1 | item) + (1 | id)
+)
+
+# 2. Correlated-Traits MIRT (CT-MIRT)
+# Hypothesis 2: Three distinct but correlated beliefs (Math, Learner, Pedagogy)
+# (0 + ... | id) allows correlations between dimensions
+bf_ct <- bf(
+  response ~ 1 + (1 | item) + 
+    (0 + dim_m + dim_l + dim_p | id)
+)
+
+# 3. Bi-factor MIRT (BF-MIRT)
+# Hypothesis 3: General belief + Orthogonal specific beliefs
+# (||) enforces orthogonality (independence) between general and specific factors
+bf_bf <- bf(
+  response ~ 1 + (1 | item) + 
+    (1 | id) +                
+    (0 + dim_m || id) +       
+    (0 + dim_l || id) +       
+    (0 + dim_p || id)
+)
+```
+
+# Preprocessing Step 1: Inspection of Original Scale
+
+```{r}
+# Load the original 5-point scale data
+data_1 <- readRDS("data/processed/data_1.rds")
+
+# Check response distribution
+print(table(data_1$response))
+
+# Run the plotting script to generate the descriptive plot
+# This script creates the ggplot object 'fig_3'
+source("scripts/03_fig3.R")
+
+# Display the plot
+fig_3
+```
+
+
+## Baseline null_rsm model
+```{r}
+# Since we use the same priors for uni_irt models, define it once.
+priors_uni <- prior("normal(0, 3)", class = "sd", group = "id") +
+  prior("normal(0, 3)", class = "sd", group = "item")
+
+```
+
+
+```{r}
+# Fit RSM on the original 5-point data
+null_rsm <- brm(
+  formula = bf_uni,
+  data = data_1,
+  family = brmsfamily("acat", "logit"),
+  prior = priors_uni,
+  chains = 4, 
+  cores = 4, 
+  iter = 4000, 
+  warmup = 2000,
+  seed = 1234,
+  file = "models/null_rsm"
+)
+
+null_rsm <- add_criterion(
+  null_rsm, 
+  criterion = c("loo", "waic")
+)
+
+saveRDS(null_rsm, "models/null_rsm.rds")
+```
+### Summary 
+```{r}
+summary (null_rsm)
+```
+
+
+# Fitting the Collapsed Model (Alternative)
+
+
+```{r}
+# Load the collapsed 4-point scale data
+data_2 <- readRDS("data/processed/data_2.rds")
+
+# Fit RSM on the collapsed 4-point data
+merge_rsm <- brm(
+  formula = bf_uni,
+  data = data_2,
+  family = brmsfamily("acat", "logit"),
+  prior = priors_uni,
+  chains = 4, 
+  cores = 4,
+  iter = 4000, 
+  warmup = 2000,
+  file = "models/merge_rsm"
+)
+
+merge_rsm <- add_criterion(
+  merge_rsm, 
+  criterion = c("loo", "waic")
+)
+
+saveRDS(merge_rsm, "models/merge_rsm.rds")
+```
+## Output and comparasion
+```{r}
+loo (null_rsm,merge_rsm) # merge_rsm is way better!
+```
+```{r}
+source("scripts/04_fig4.R")
+
+fig_4
+```
+
+
+```{r}
+summary (merge_rsm) # but still, the gaping issue remains.
+```
+
+# Phase 3: Dimensionality Verification
+
+We now test the competing dimensional structures using the collapsed dataset (`data_2`). 
+Note that `merge_rsm` already serves as our UIRT baseline for this comparison.
+
+## Fitting the Correlated-Traits Model (CT-MIRT)
+
+For the Correlated-Traits model, we need to specify a prior for the correlation matrix between the three latent traits. We use an `LKJ(2)` prior, which weakly favors lower correlations, aiding convergence.
+
+Given the increased model complexity, we also increase `max_treedepth` to 15 to prevent NUTS saturation.
+
+```{r}
+# Define priors for CT model: Base priors + Correlation prior
+priors_ct <- priors_uni + prior(lkj(2), class = "cor")
+
+# Fit CT-MIRT
+ct_rsm <- brm(
+  formula = bf_ct,
+  data = data_2,
+  family = brmsfamily("acat", "logit"),
+  prior = priors_ct,
+  chains = 4, 
+  cores = 4, 
+  iter = 4000, 
+  warmup = 2000, 
+  seed = 1234,
+  # Tutorial Adjustment: Increase treedepth for complex MIRT
+  control = list(adapt_delta = 0.99, max_treedepth = 15), 
+  file = "models/ct_rsm"
+)
+
+ct_rsm <- add_criterion(
+  ct_rsm, 
+  criterion = c("loo", "waic")
+)
+
+saveRDS(ct_rsm, "models/ct_rsm.rds")
+```
+
+```{r}
+summary (ct_rsm)
+```
+
+## Fitting the Bi-factor Model (BF-MIRT)
+The Bi-factor model assumes orthogonal specific factors. While we don't need a correlation prior, the orthogonality constraints make the posterior geometry difficult to explore. We maintain the robust control settings.
+
+```{r}
+# Fit BF-MIRT
+# Note: bf_bf formula uses '||' which assumes orthogonality (no correlations)
+bf_rsm <- brm(
+  formula = bf_bf,
+  data = data_2,
+  family = brmsfamily("acat", "logit"),
+  prior = priors_uni, # Reuse standard SD priors
+  chains = 4, 
+  cores = 4, 
+  iter = 4000, 
+  warmup = 2000, 
+  seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/bf_rsm"
+)
+
+bf_rsm <- add_criterion(
+  bf_rsm, 
+  criterion = c("loo", "waic")
+)
+
+saveRDS(bf_rsm, "models/bf_rsm.rds")
+```
+
+
+## Model Comparison: Dimensionality
+We compare the three structures (Uni, CT, BF) to determine the best-fitting dimensionality for the equity beliefs.
+
+```{r}
+loo_compare(merge_rsm, ct_rsm, bf_rsm, criterion = "loo")
+```
+# Discrimination check
+
+```{r}
+# CT-2pl Formula
+bf_ct_2pl <- bf(
+  response ~ 1 + (1 | item) + (0 + dim_m + dim_l + dim_p | id),
+  disc ~ 1 + (1 | item)
+)
+
+priors_ct_2pl <- priors_ct + 
+  prior("normal(0, 1)", class = "sd", group = "item", dpar = "disc")
+
+# BF-2pl Formula
+bf_bf_2pl <- bf(
+  response ~ 1 + (1 | item) + 
+    (1 | id) +                
+    (0 + dim_m || id) +       
+    (0 + dim_l || id) +       
+    (0 + dim_p || id),        
+  disc ~ 1 + (1 | item)       
+)
+
+priors_bf_2pl <- priors_uni + 
+  prior("normal(0, 1)", class = "sd", group = "item", dpar = "disc")
+```
+
+## Fit 2pl (ct_grsm, bf_grsm)
+```{r}
+
+ct_grsm <- brm(
+  formula = bf_ct_2pl,
+  data = data_2,
+  family = brmsfamily("acat", "logit"),
+  prior = priors_ct_2pl,
+  chains = 4, 
+  cores = 4, 
+  iter = 4000, 
+  warmup = 2000, 
+  seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/ct_grsm"
+)
+
+ct_grsm <- add_criterion(ct_grsm, criterion = c("loo", "waic"), overwrite = TRUE)
+saveRDS(ct_grsm, "models/ct_grsm.rds")
+
+bf_grsm <- brm(
+  formula = bf_bf_2pl,
+  data = data_2,
+  family = brmsfamily("acat", "logit"),
+  prior = priors_bf_2pl,
+  chains = 4, 
+  cores = 4, 
+  iter = 4000, 
+  warmup = 2000, 
+  seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/bf_grsm"
+)
+
+bf_grsm <- add_criterion(bf_grsm, criterion = c("loo", "waic"), overwrite = TRUE)
+saveRDS(bf_grsm, "models/bf_grsm.rds")
+```
+
+## Output and compare
+
+```{r}
+loo_compare(ct_rsm, bf_rsm, ct_grsm, bf_grsm, criterion = "loo")
+```
+
+```{r}
+summary (bf_grsm)
+```
+
+```{r}
+
+source ("scripts/05_fig5.R")
+fig_5
+
+```
+
+# Delete poor items
+
+```{r}
+# This provides data3 that is without bm1r~bm4r
+data_3 <- readRDS("data/processed/data_3.rds")
+```
+
+# Model setting compare
+
+```{r}
+
+# --- 1. GRSM (Family: acat) on Data 3 ---
+# Use existing 2PL formulas and priors
+
+# CT-GRSM (New)
+ct_grsm_new <- brm(
+  formula = bf_ct_2pl,
+  data = data_3,
+  family = brmsfamily("acat", "logit"),
+  prior = priors_ct_2pl,
+  backend = "cmdstanr",  # add this to avoid crushing
+  chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/ct_grsm_new"
+)
+ct_grsm_new <- add_criterion(ct_grsm_new, "loo", overwrite = TRUE)
+saveRDS(ct_grsm_new, "models/ct_grsm_new.rds")
+
+# BF-GRSM (New)
+bf_grsm_new <- brm(
+  formula = bf_bf_2pl,
+  data = data_3,
+  family = brmsfamily("acat", "logit"),
+  prior = priors_bf_2pl,
+  backend = "cmdstanr",  # add this to avoid crushing
+  chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/bf_grsm_new"
+)
+bf_grsm_new <- add_criterion(bf_grsm_new, "loo", overwrite = TRUE)
+saveRDS(bf_grsm_new, "models/bf_grsm_new.rds")
+
+# --- 2. GRM (Family: cumulative) on Data 3 ---
+
+# CT-GRM (New)
+ct_grm_new <- brm(
+  formula = bf_ct_2pl,
+  data = data_3,
+  family = brmsfamily("cumulative", "logit"), # Changed to cumulative
+  prior = priors_ct_2pl,
+  backend = "cmdstanr",  # add this to avoid crushing
+  chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/ct_grm_new"
+)
+ct_grm_new <- add_criterion(ct_grm_new, "loo", overwrite = TRUE)
+saveRDS(ct_grm_new, "models/ct_grm_new.rds")
+
+# BF-GRM (New)
+bf_grm_new <- brm(
+  formula = bf_bf_2pl,
+  data = data_3,
+  family = brmsfamily("cumulative", "logit"), # Changed to cumulative
+  prior = priors_bf_2pl,
+  backend = "cmdstanr",  # add this to avoid crushing
+  chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/bf_grm_new"
+)
+bf_grm_new <- add_criterion(bf_grm_new, "loo", overwrite = TRUE)
+saveRDS(bf_grm_new, "models/bf_grm_new.rds")
+
+# --- 3. GPCM on Data 3 ---
+# Formula: Needs cs(1) to allow thresholds to vary by item (Partial Credit)
+
+# Define PCM Formulas
+bf_ct_pcm <- bf(
+  response ~ 1 + (cs(1) | item) + (0 + dim_m + dim_l + dim_p | id),
+  disc ~ 1 + (1 | item)
+)
+
+bf_bf_pcm <- bf(
+  response ~ 1 + (cs(1) | item) + 
+    (1 | id) + (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id),
+  disc ~ 1 + (1 | item)
+)
+
+# Fit CT-PCM (New)
+ct_pcm_new <- brm(
+  formula = bf_ct_pcm,
+  data = data_3,
+  family = brmsfamily("acat", "logit"),
+  prior = priors_ct_2pl, # Reuse same priors
+  backend = "cmdstanr",  # add this to avoid crushing
+  chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/ct_pcm_new"
+)
+ct_pcm_new <- add_criterion(ct_pcm_new, "loo", overwrite = TRUE)
+saveRDS(ct_pcm_new, "models/ct_pcm_new.rds")
+
+# Fit BF-PCM (New)
+bf_pcm_new <- brm(
+  formula = bf_bf_pcm,
+  data = data_3,
+  family = brmsfamily("acat", "logit"),
+  prior = priors_bf_2pl, # Reuse same priors
+  backend = "cmdstanr",  # add this to avoid crushing
+  chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  file = "models/bf_pcm_new"
+)
+bf_pcm_new <- add_criterion(bf_pcm_new, "loo", overwrite = TRUE)
+saveRDS(bf_pcm_new, "models/bf_pcm_new.rds")
+```
+
+
+```{r}
+# Final 6-Model Comparison on Data 3
+loo_compare(
+  ct_grsm_new, bf_grsm_new, 
+  ct_grm_new,  bf_grm_new,
+  ct_pcm_new,  bf_pcm_new,
+  criterion = "loo"
+)
+
+
+# Check weights
+loo_model_weights(list(
+  CT_GRSM = ct_grsm_new, BF_GRSM = bf_grsm_new,
+  CT_GRM  = ct_grm_new,  BF_GRM  = bf_grm_new,
+  CT_PCM  = ct_pcm_new,  BF_PCM  = bf_pcm_new
+))         
+```
+
