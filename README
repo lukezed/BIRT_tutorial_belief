@@ -1,0 +1,54 @@
+Full script of paper: Zhang, C., & Pampaka, M. (upcoming). Applying Bayesian Item Response Theory for Small-Scale Datasets: An Example Workflow for Measuring Multidimensional Mathematics Teachers' Belief about Equity.
+The analysis is designed to be modular:
+
+Core brms modeling operations are documented in analysis.Rmd.
+
+Data cleaning, processing, and plotting are located in the scripts/ folder.
+
+Please follow the numbered scripts in the scripts/ folder for reproduction if needed.
+
+Project Structure
+Plaintext
+
+.
+├── BIRT_tutorial_belief.Rproj
+├── analysis.Rmd
+├── data
+│   ├── processed
+│   │   ├── data_1.rds
+│   │   ├── data_2.rds
+│   │   └── data_3.rds
+│   └── raw
+│       └── belief_clean.csv
+├── figures
+│   ├── fig3_response_distribution.png
+│   ├── fig4_wright_map.png
+│   ├── fig5_model_comparison.png
+│   ├── fig6_final_diagnostics.png
+│   └── fig7_combined_dif.png
+├── models
+│   ├── bf_gpcm_new.rds
+│   ├── bf_grm_dif.rds
+│   ├── bf_grm_dif2.rds
+│   ├── bf_grm_new.rds
+│   ├── bf_grsm.rds
+│   ├── bf_grsm_new.rds
+│   ├── bf_rsm.rds
+│   ├── ct_gpcm_new.rds
+│   ├── ct_grm_new.rds
+│   ├── ct_grsm.rds
+│   ├── ct_grsm_new.rds
+│   ├── ct_rsm.rds
+│   ├── merge_rsm.rds
+│   └── null_rsm.rds
+├── paper
+└── scripts
+    ├── 00_packages.R
+    ├── 01_data_cleaning.R
+    ├── 02_category_collapse.R
+    ├── 03_fig3.R
+    ├── 04_fig4.R
+    ├── 05_fig5.R
+    ├── 06_data_refinement.R
+    ├── 07_fig6.R
+    └── 08_fig7.R

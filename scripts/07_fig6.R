@@ -111,7 +111,7 @@ p6 <- ggplot(df_p, aes(x = id, y = Estimate)) +
   geom_pointrange(aes(ymin = Q2.5, ymax = Q97.5), 
                   color = "#0072B2", alpha = 0.9, linewidth = 0.4, size = 0.2) +
   coord_flip() +
-  ylim(global_ylim) + # 统一刻度
+  ylim(global_ylim) + 
   labs(title = "Belief about Pedagogy", x = NULL, y = NULL) +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(), panel.grid = element_blank())
 
