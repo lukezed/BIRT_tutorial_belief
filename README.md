@@ -1,15 +1,14 @@
-Full script of paper: Zhang, C., & Pampaka, M. (upcoming). Applying Bayesian Item Response Theory for Small-Scale Datasets: An Example Workflow for Measuring Multidimensional Mathematics Teachers' Belief about Equity.
+# Full script of paper: Zhang, C., & Pampaka, M. (upcoming). Applying Bayesian Item Response Theory for Small-Scale Datasets: An Example Workflow for Measuring Multidimensional Mathematics Teachers' Belief about Equity.
+
 The analysis is designed to be modular:
+* **Core `brms` modeling** operations are documented in `analysis.Rmd`.
+* **Data cleaning, processing, and plotting** are located in the `scripts/` folder.
 
-Core brms modeling operations are documented in analysis.Rmd.
+Please follow the numbered scripts in the `scripts/` folder for reproduction if needed.
 
-Data cleaning, processing, and plotting are located in the scripts/ folder.
+## Project Structure
 
-Please follow the numbered scripts in the scripts/ folder for reproduction if needed.
-
-Project Structure
-Plaintext
-
+```text
 .
 ├── BIRT_tutorial_belief.Rproj
 ├── analysis.Rmd
