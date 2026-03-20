@@ -1,0 +1,96 @@
+---
+title: "A reusable Bayesian IRT workflow for small-sample instrument validation: A tutorial with a case study in teacher belief measurement"
+shorttitle: "BAYESIAN IRT WORKFLOW FOR SMALL-SAMPLE VALIDATION"
+author:
+  - name: Chi Zhang
+    corresponding: true
+    orcid: 0000-0002-9535-6186
+    email: chi.zhang-3@manchester.ac.uk
+    affiliations:
+      - ref: mie
+  - name: Maria Pampaka
+    orcid: 0000-0001-5481-1560
+    email: maria.pampaka@manchester.ac.uk
+    affiliations:
+      - ref: mie
+      - ref: socstat
+
+affiliations:
+  - id: mie
+    name: The University of Manchester
+    department: Manchester Institute of Education
+    address: Oxford Road
+    city: Manchester
+    region: England
+    postal-code: M13 9PL
+  - id: socstat
+    name: The University of Manchester
+    department: Department of Social Statistics
+
+abstract: |
+  Bayesian Item Response Theory (IRT) offers distinct advantages for fitting complex measurement models under sample-size constraints, yet practical guidance on implementing complete Bayesian IRT workflows for applied researchers remains limited. This tutorial presents a reusable workflow for validating multidimensional instruments with limited samples using the R package brms. The workflow guides researchers through five integrated steps: (1) preprocessing decisions for sparse ordinal responses, (2) comparing competing dimensional structures including bi-factor models, (3) using discrimination parameters as diagnostic tools for identifying threshold anomalies and misfitting items, (4) selecting among ordinal link functions using cross-validation and stability diagnostics, and (5) incorporating covariates and differential item functioning analysis. Throughout, we emphasise how the rich diagnostic information provided by Bayesian posterior distributions supports informed qualitative judgment at each decision point. The workflow is illustrated through the validation of a 24-item instrument measuring Chinese secondary mathematics teachers' beliefs about equity (n = 155). The iterative process identified misfitting items, resolved threshold anomalies, and ultimately supported a bi-factor graded response model with a general inclusive belief factor and three domain-specific components. All analysis code and data are available in a companion repository.
+
+keywords: [Bayesian item response theory; multidimensional IRT; instrument validation; Bayesian workflow; brms]
+
+author-note:
+  disclosures:
+    conflict of interest: I have no known conflict of interest to disclose.
+    financial support: "This research was supported by [Your Funding Agency/Grant Number]."
+  correspondence: |
+    Correspondence concerning this article should be addressed to Chi Zhang, 
+    Manchester Institute of Education, The University of Manchester, 
+    Oxford Road, Manchester, England, M13 9PL. 
+    Tel: +44 7724218584; Email: chi.zhang-3@manchester.ac.uk
+
+
+bibliography: reference.bib
+
+
+format:
+  wjschne/apaquarto-pdf:
+    documentmode: man
+    floatsintext: true
+    pdf-engine: xelatex
+    keep-tex: true
+    dev: pdf
+    mainfont: "Times New Roman"
+
+header-includes:
+  - \makeatletter
+  - \@ifundefined{cslhangindent}{\newlength{\cslhangindent}}{}
+  - \makeatother
+---
+
+# Results
+
+## Bayesian IRT Framework
+
+The current study evaluates mathematics teachers' beliefs about equity through a Bayesian Item Response Theory (IRT) framework. As noted by @burkner2019statis, Bayesian methods are particularly robust for complex multidimensional structures when dealing with limited sample sizes. In this model, the probability of teacher $i$ endorsing item $j$ is defined by the following two-parameter logistic (2PL) function:
+
+$$P(y_{ij} = 1 | \theta_i, a_j, b_j) = \frac{\exp[a_j(\theta_i - b_j)]}{1 + \exp[a_j(\theta_i - b_j)]}$$
+
+Where $\theta_i$ represents the latent equity belief of teacher $i$, $a_j$ is the item discrimination, and $b_j$ is the item difficulty threshold. Following the scale development procedures described by @hinckley2026develo, we compared three competing structures.
+
+``` r
+# --- Bayesian IRT Model Specification ---
+library(brms)
+
+# Define the 2PL model formula
+bf_2pl <- bf(
+  ans ~ 1 + (1 | item) + (1 | person),
+  disc ~ 1 + (1 | item)
+)
+```
+
+## Model Comparison and Validation
+
+The results suggest that the bi-factor model provides the most parsimonious fit for measuring equity beliefs [see also @hinckley2026develo, for a discussion on multidimensionality]. In the bi-factor specification, the latent response is determined by both a general factor ($\theta_G$) and specific dimensions ($\theta_S$):
+
+$$\text{logit}[P(y_{ij}=1)] = \alpha_{jG}\theta_{iG} + \alpha_{jS}\theta_{iS} - \beta_j$$
+
+Consistent with the recommendations of @burkner2024brms, we implemented the models using weakly informative priors to ensure the stability of the posterior estimates. All models were checked for convergence using the R-hat diagnostic ($\hat{R} < 1.01$).
+
+# References
+
+::: {#refs}
+:::
