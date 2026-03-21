@@ -72,46 +72,6 @@
 \usepackage[protrusion=true]{microtype}
 
 
-\usepackage{color}
-\usepackage{fancyvrb}
-\newcommand{\VerbBar}{|}
-\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
-\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
-% Add ',fontsize=\small' for more characters per line
-\usepackage{framed}
-\definecolor{shadecolor}{RGB}{241,243,245}
-\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
-\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
-\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
-\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.40,0.45,0.13}{#1}}
-\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
-\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
-\newcommand{\CharTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
-\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
-\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
-\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
-\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
-\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
-\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
-\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
-\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
-\newcommand{\ExtensionTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
-\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
-\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.28,0.35,0.67}{#1}}
-\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.46,0.62}{#1}}
-\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
-\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
-\newcommand{\NormalTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
-\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
-\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
-\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
-\newcommand{\RegionMarkerTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
-\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
-\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
-\newcommand{\StringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
-\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.07,0.07,0.07}{#1}}
-\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
-\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
 
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
@@ -143,39 +103,6 @@
 \makeatother
 
 
-% definitions for citeproc citations
-\NewDocumentCommand\citeproctext{}{}
-\NewDocumentCommand\citeproc{mm}{%
-  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
-\makeatletter
- % allow citations to break across lines
- \let\@cite@ofmt\@firstofone
- % avoid brackets around text for \cite:
- \def\@biblabel#1{}
- \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
-\makeatother
-\newlength{\cslhangindent}
-\setlength{\cslhangindent}{1.5em}
-\newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{3em}
-\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
- {\begin{list}{}{%
-  \setlength{\itemindent}{0pt}
-  \setlength{\leftmargin}{0pt}
-  \setlength{\parsep}{0pt}
-  % turn on hanging indent if param 1 is 1
-  \ifodd #1
-   \setlength{\leftmargin}{\cslhangindent}
-   \setlength{\itemindent}{-1\cslhangindent}
-  \fi
-  % set entry spacing
-  \setlength{\itemsep}{#2\baselineskip}}}
- {\end{list}}
-\usepackage{calc}
-\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
 
 
@@ -367,81 +294,7 @@ Manchester, Oxford Road, Manchester, England M13
 
 \setlength{\cslhangindent}{0.5in}
 
-\section{Results}\label{results}
 
-\subsection{Bayesian IRT Framework}\label{bayesian-irt-framework}
-
-The current study evaluates mathematics teachers' beliefs about equity
-through a Bayesian Item Response Theory (IRT) framework. As noted by
-Bürkner et al. (\citeproc{ref-burkner2019statis}{2019}), Bayesian
-methods are particularly robust for complex multidimensional structures
-when dealing with limited sample sizes. In this model, the probability
-of teacher \(i\) endorsing item \(j\) is defined by the following
-two-parameter logistic (2PL) function:
-
-\[P(y_{ij} = 1 | \theta_i, a_j, b_j) = \frac{\exp[a_j(\theta_i - b_j)]}{1 + \exp[a_j(\theta_i - b_j)]}\]
-
-Where \(\theta_i\) represents the latent equity belief of teacher \(i\),
-\(a_j\) is the item discrimination, and \(b_j\) is the item difficulty
-threshold. Following the scale development procedures described by
-Hinckley et al. (\citeproc{ref-hinckley2026develo}{2026}), we compared
-three competing structures.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# {-}{-}{-} Bayesian IRT Model Specification {-}{-}{-}}
-\FunctionTok{library}\NormalTok{(brms)}
-
-\CommentTok{\# Define the 2PL model formula}
-\NormalTok{bf\_2pl }\OtherTok{\textless{}{-}} \FunctionTok{bf}\NormalTok{(}
-\NormalTok{  ans }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ person),}
-\NormalTok{  disc }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item)}
-\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\subsection{Model Comparison and
-Validation}\label{model-comparison-and-validation}
-
-The results suggest that the bi-factor model provides the most
-parsimonious fit for measuring equity beliefs (see also
-\citeproc{ref-hinckley2026develo}{Hinckley et al., 2026}, for a
-discussion on multidimensionality). In the bi-factor specification, the
-latent response is determined by both a general factor (\(\theta_G\))
-and specific dimensions (\(\theta_S\)):
-
-\[\text{logit}[P(y_{ij}=1)] = \alpha_{jG}\theta_{iG} + \alpha_{jS}\theta_{iS} - \beta_j\]
-
-Consistent with the recommendations of Bürkner
-(\citeproc{ref-burkner2024brms}{2024}), we implemented the models using
-weakly informative priors to ensure the stability of the posterior
-estimates. All models were checked for convergence using the R-hat
-diagnostic (\(\hat{R} < 1.01\)).
-
-\section{References}\label{references}
-
-\phantomsection\label{refs}
-\begin{CSLReferences}{1}{0}
-\bibitem[\citeproctext]{ref-burkner2024brms}
-Bürkner, P.-C. (2024). \emph{The brms {Book}: {Applied Bayesian
-Regression Modelling Using R} and {Stan} ({Early Draft})}.
-
-\bibitem[\citeproctext]{ref-burkner2019statis}
-Bürkner, P.-C., Schulte, N., \& Holling, H. (2019). On the {Statistical}
-and {Practical Limitations} of {Thurstonian IRT Models}.
-\emph{Educational and Psychological Measurement}, \emph{79}(5),
-827--854. \url{https://doi.org/10.1177/0013164419832063}
-
-\bibitem[\citeproctext]{ref-hinckley2026develo}
-Hinckley, K., Alvarado, M., McCoy, D. C., Jäggi, L., Dormal, M.,
-Mäusezahl, D., Hartinger, S. M., Castellanos, A., Huaylinos Bustamante,
-M. L., Aguilar, L., Gastiaburú Cabello, M. C., Quispe Roncal, N. G., \&
-Fink, G. (2026). Development and validation of the {Nurturing Parenting
-Beliefs} and {Behaviors Scale} ({NPBBS}): {Measuring} parenting in high
-{Andean Peru}. \emph{Developmental Psychology}, \emph{62}(1), 233--253.
-\url{https://doi.org/10.1037/dev0002037}
-
-\end{CSLReferences}
 
 
 

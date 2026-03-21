@@ -61,34 +61,7 @@ header-includes:
   - \makeatother
 ---
 
-# Results
 
-## Bayesian IRT Framework
-
-The current study evaluates mathematics teachers' beliefs about equity through a Bayesian Item Response Theory (IRT) framework. As noted by @burkner2019statis, Bayesian methods are particularly robust for complex multidimensional structures when dealing with limited sample sizes. In this model, the probability of teacher $i$ endorsing item $j$ is defined by the following two-parameter logistic (2PL) function:
-
-$$P(y_{ij} = 1 | \theta_i, a_j, b_j) = \frac{\exp[a_j(\theta_i - b_j)]}{1 + \exp[a_j(\theta_i - b_j)]}$$
-
-Where $\theta_i$ represents the latent equity belief of teacher $i$, $a_j$ is the item discrimination, and $b_j$ is the item difficulty threshold. Following the scale development procedures described by @hinckley2026develo, we compared three competing structures.
-
-``` r
-# --- Bayesian IRT Model Specification ---
-library(brms)
-
-# Define the 2PL model formula
-bf_2pl <- bf(
-  ans ~ 1 + (1 | item) + (1 | person),
-  disc ~ 1 + (1 | item)
-)
-```
-
-## Model Comparison and Validation
-
-The results suggest that the bi-factor model provides the most parsimonious fit for measuring equity beliefs [see also @hinckley2026develo, for a discussion on multidimensionality]. In the bi-factor specification, the latent response is determined by both a general factor ($\theta_G$) and specific dimensions ($\theta_S$):
-
-$$\text{logit}[P(y_{ij}=1)] = \alpha_{jG}\theta_{iG} + \alpha_{jS}\theta_{iS} - \beta_j$$
-
-Consistent with the recommendations of @burkner2024brms, we implemented the models using weakly informative priors to ensure the stability of the posterior estimates. All models were checked for convergence using the R-hat diagnostic ($\hat{R} < 1.01$).
 
 # References
 
