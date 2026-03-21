@@ -1,7 +1,7 @@
 ---
 title: "belief_tutorial"
-author: "Chi Zhang"
-date: "2025-12-14"
+author: "Chi Zhang & Maria Pampaka"
+date: "2026-03-21"
 output: html_document
 ---
 
@@ -12,36 +12,75 @@ output: html_document
 source("scripts/00_packages.R")
 ```
 
-# Theoretical Hypotheses and Model Formulas
+# Model Formulas: Three Competing Dimensional Structures
+In brms, IRT models are specified as generalized linear mixed models 
+(GLMMs). Item parameters are modelled as random intercepts grouped by 
+item, and person parameters as random effects grouped by person id. The 
+three structural hypotheses translate directly into different random 
+effect specifications:
 
 ```{r}
 # 1. Unidimensional IRT (UIRT)
-# Hypothesis 1: All items measure a single latent trait (General Equity Belief)
+# All items load on a single latent trait.
+# (1 | item) = item-specific difficulty (random intercept)
+# (1 | id)   = person ability (random intercept)
 bf_uni <- bf(
   response ~ 1 + (1 | item) + (1 | id)
 )
 
 # 2. Correlated-Traits MIRT (CT-MIRT)
-# Hypothesis 2: Three distinct but correlated beliefs (Math, Learner, Pedagogy)
-# (0 + ... | id) allows correlations between dimensions
+# Items load on one of three correlated dimensions.
+# dim_m, dim_l, dim_p are binary indicators (0/1) assigning each item 
+# to its dimension.
+# (0 + dim_m + dim_l + dim_p | id) estimates three person-level traits 
+# with an unrestricted covariance matrix, allowing correlations between 
+# dimensions.
 bf_ct <- bf(
   response ~ 1 + (1 | item) + 
     (0 + dim_m + dim_l + dim_p | id)
 )
 
 # 3. Bi-factor MIRT (BF-MIRT)
-# Hypothesis 3: General belief + Orthogonal specific beliefs
-# (||) enforces orthogonality (independence) between general and specific factors
+# A general factor (1 | id) plus dimension-specific factors.
+# The double-bar notation (||) in brms suppresses correlations between 
+# random effects.
 bf_bf <- bf(
   response ~ 1 + (1 | item) + 
-    (1 | id) +                
-    (0 + dim_m || id) +       
-    (0 + dim_l || id) +       
+    (1 || id) +
+    (0 + dim_m || id) +
+    (0 + dim_l || id) +
     (0 + dim_p || id)
 )
 ```
 
-# Preprocessing Step 1: Inspection of Original Scale
+# Prior Specification
+
+We use weakly informative priors throughout, following recommendations 
+in Bürkner (2021). These provide sufficient regularisation to aid 
+convergence without imposing strong constraints on parameter estimates.
+
+```{r priors}
+# Standard priors for person and item random effects
+priors_uni <- prior("normal(0, 3)", class = "sd", group = "id") +
+  prior("normal(0, 3)", class = "sd", group = "item")
+
+# For CT models: add LKJ(2) prior on the correlation matrix between 
+# latent dimensions. LKJ with eta > 1 weakly favours smaller 
+# correlations, aiding convergence.
+priors_ct <- priors_uni + prior(lkj(2), class = "cor")
+
+# For 2PL models: add prior for log-discrimination.
+priors_ct_2pl <- priors_ct +
+  prior("normal(0, 1)", class = "sd", group = "item", dpar = "disc")
+
+priors_bf_2pl <- priors_uni +
+  prior("normal(0, 1)", class = "sd", group = "item", dpar = "disc")
+```
+
+
+# Step 1: Preprocessing sparse response categories
+
+## Inspecting the original 5-point scale
 
 ```{r}
 # Load the original 5-point scale data
@@ -54,19 +93,11 @@ print(table(data_1$response))
 # This script creates the ggplot object 'fig_3'
 source("scripts/03_fig3.R")
 
-# Display the plot
 fig_3
 ```
 
 
 ## Baseline null_rsm model
-```{r}
-# Since we use the same priors for uni_irt models, define it once.
-priors_uni <- prior("normal(0, 3)", class = "sd", group = "id") +
-  prior("normal(0, 3)", class = "sd", group = "item")
-
-```
-
 
 ```{r}
 # Fit RSM on the original 5-point data
@@ -90,13 +121,18 @@ null_rsm <- add_criterion(
 
 saveRDS(null_rsm, "models/null_rsm.rds")
 ```
+
 ### Summary 
 ```{r}
 summary (null_rsm)
 ```
 
+## Collapsing sparse categories
 
-# Fitting the Collapsed Model (Alternative)
+Twelve items had fewer than three responses in the lowest category 
+("strongly disagree"), providing insufficient information for reliable 
+threshold estimation. We collapse categories 1 and 2 into a single 
+category, reducing the scale from 5 to 4 ordered categories.
 
 
 ```{r}
@@ -123,31 +159,50 @@ merge_rsm <- add_criterion(
 
 saveRDS(merge_rsm, "models/merge_rsm.rds")
 ```
-## Output and comparasion
+
 ```{r}
-loo (null_rsm,merge_rsm) # merge_rsm is way better!
+summary(merge_rsm)
 ```
+### A note on comparing models across different response scales
+
+```{r}
+# You might attempt to compare the two models using LOO-CV:
+loo(null_rsm, merge_rsm)
+
+# However, this comparison should be interpreted with caution. 
+# The two models predict different response variables (5 categories 
+# vs 4 categories). Reducing the number of categories mechanically 
+# increases per-observation predictive density — predicting among 
+# 4 outcomes is inherently "easier" than predicting among 5. 
+#
+# The decision to collapse categories is instead justified by:
+# (1) Descriptive evidence: 12 items had < 3 responses in category 1.
+# (2) Diagnostic evidence: the initial RSM produced anomalous threshold
+#     ordering (see summary above), where the model could not 
+#     meaningfully distinguish between the first two category transitions.
+```
+### Summary
+
 ```{r}
 source("scripts/04_fig4.R")
 
 fig_4
 ```
 
-
 ```{r}
 summary (merge_rsm) # but still, the gaping issue remains.
 ```
 
-# Phase 3: Dimensionality Verification
+# Step 2: Dimensionality — Unidimensional vs Multidimensional
 
-We now test the competing dimensional structures using the collapsed dataset (`data_2`). 
-Note that `merge_rsm` already serves as our UIRT baseline for this comparison.
+We compare the three competing dimensional structures using the 
+collapsed dataset (`data_2`). All models here use the same 1PL (RSM) 
+specification with the same 4-category response variable, making LOO-CV 
+comparisons valid.
 
-## Fitting the Correlated-Traits Model (CT-MIRT)
+## Fitting the Correlated-Traits model
 
-For the Correlated-Traits model, we need to specify a prior for the correlation matrix between the three latent traits. We use an `LKJ(2)` prior, which weakly favors lower correlations, aiding convergence.
 
-Given the increased model complexity, we also increase `max_treedepth` to 15 to prevent NUTS saturation.
 
 ```{r}
 # Define priors for CT model: Base priors + Correlation prior
@@ -164,7 +219,7 @@ ct_rsm <- brm(
   iter = 4000, 
   warmup = 2000, 
   seed = 1234,
-  # Tutorial Adjustment: Increase treedepth for complex MIRT
+  # Increase treedepth for complex MIRT
   control = list(adapt_delta = 0.99, max_treedepth = 15), 
   file = "models/ct_rsm"
 )
@@ -182,16 +237,13 @@ summary (ct_rsm)
 ```
 
 ## Fitting the Bi-factor Model (BF-MIRT)
-The Bi-factor model assumes orthogonal specific factors. While we don't need a correlation prior, the orthogonality constraints make the posterior geometry difficult to explore. We maintain the robust control settings.
 
 ```{r}
-# Fit BF-MIRT
-# Note: bf_bf formula uses '||' which assumes orthogonality (no correlations)
 bf_rsm <- brm(
   formula = bf_bf,
   data = data_2,
   family = brmsfamily("acat", "logit"),
-  prior = priors_uni, # Reuse standard SD priors
+  prior = priors_uni, 
   chains = 4, 
   cores = 4, 
   iter = 4000, 
@@ -210,14 +262,24 @@ saveRDS(bf_rsm, "models/bf_rsm.rds")
 ```
 
 
-## Model Comparison: Dimensionality
-We compare the three structures (Uni, CT, BF) to determine the best-fitting dimensionality for the equity beliefs.
+## Dimensionality comparison
 
 ```{r}
 loo_compare(merge_rsm, ct_rsm, bf_rsm, criterion = "loo")
+# Both CT and BF substantially outperform the unidimensional model,
+# confirming that the data have multidimensional structure.
+# However, CT and BF are not clearly distinguishable at this stage.
 ```
-# Discrimination check
+# Step 3: Freeing Discrimination Parameters
+The RSM constrains all item discriminations to be equal. When items 
+differ substantially in how well they differentiate between respondents, 
+this constraint forces the model to find compromise threshold values, 
+which can produce anomalous threshold ordering. Freeing discrimination 
+parameters (moving from 1PL to 2PL) serves a dual diagnostic purpose: 
+it tests the equal-discrimination assumption and reveals items with 
+poor measurement properties.
 
+## 2PL formula specification
 ```{r}
 # CT-2pl Formula
 bf_ct_2pl <- bf(
@@ -280,7 +342,7 @@ bf_grsm <- add_criterion(bf_grsm, criterion = c("loo", "waic"), overwrite = TRUE
 saveRDS(bf_grsm, "models/bf_grsm.rds")
 ```
 
-## Output and compare
+## Comparing 1PL and 2PL specifications
 
 ```{r}
 loo_compare(ct_rsm, bf_rsm, ct_grsm, bf_grsm, criterion = "loo")
@@ -290,128 +352,161 @@ loo_compare(ct_rsm, bf_rsm, ct_grsm, bf_grsm, criterion = "loo")
 summary (bf_grsm)
 ```
 
+## Wright map: inspecting discrimination and difficulty
+
 ```{r}
 
 source ("scripts/05_fig5.R")
 fig_5
 
+# The Wright map reveals substantial variation in discrimination 
+# across items, confirming that the equal-discrimination assumption 
+# was untenable. Threshold ordering has also improved (see paper 
+# Table for threshold estimates).
+#
+# Critically, four items (Bm_1_r to Bm_4_r) stand out with:
+# - Discrimination estimates near zero
+# - Extremely wide credible intervals on difficulty
+# These are candidates for removal.
 ```
 
-# Delete poor items
+# Step 4: Item removal and different link function comparisons
 
 ```{r}
 # This provides data3 that is without bm1r~bm4r
 data_3 <- readRDS("data/processed/data_3.rds")
 ```
 
-# Model setting compare
+With dimensionality confirmed and problematic items removed, we now 
+compare IRT models defined by different ordinal link functions. 
+
+## Fitting the six models
+
+Three link function families are compared, each crossed with two 
+dimensional structures (CT and BF), yielding six models:
+
+
 
 ```{r}
+# --- GRSM: Generalised Rating Scale Model ---
+# Link: adjacent-category logit
+# Thresholds: shared across items (only item intercepts vary)
+# In brms: family = brmsfamily("acat", "logit")
+# Formula:  response ~ 1 + (1 | item) + ...
+#
+# --- GRM: Graded Response Model ---
+# Link: cumulative logit
+# Thresholds: item-specific (estimated via cumulative family)
+# In brms: family = brmsfamily("cumulative", "logit")
+# Formula:  same as GRSM; the family handles the parameterisation
+#
+# --- GPCM: Generalised Partial Credit Model ---
+# Link: adjacent-category logit
+# Thresholds: item-specific (via category-specific effects)
+# In brms: family = brmsfamily("acat", "logit")
+# Formula:  response ~ 1 + (cs(1) | item) + ...
+#           cs(1) allows thresholds to vary by item
 
-# --- 1. GRSM (Family: acat) on Data 3 ---
 
-# CT-GRSM (New)
-ct_grsm_new <- brm(
+# --- 1. GRSM  ---
+
+ct_grsm_20 <- brm(
   formula = bf_ct_2pl,
   data = data_3,
   family = brmsfamily("acat", "logit"),
   prior = priors_ct_2pl,
-  backend = "cmdstanr",  
+  backend = "cmdstanr",
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
-  file = "models/ct_grsm_new"
+  file = "models/ct_grsm_20"
 )
-ct_grsm_new <- add_criterion(ct_grsm_new, "loo", overwrite = TRUE)
-saveRDS(ct_grsm_new, "models/ct_grsm_new.rds")
+ct_grsm_20 <- add_criterion(ct_grsm_20, "loo", overwrite = TRUE)
+saveRDS(ct_grsm_20, "models/ct_grsm_20.rds")
 
-# BF-GRSM (New)
-bf_grsm_new <- brm(
+bf_grsm_20 <- brm(
   formula = bf_bf_2pl,
   data = data_3,
   family = brmsfamily("acat", "logit"),
   prior = priors_bf_2pl,
-  backend = "cmdstanr",  
+  backend = "cmdstanr",
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
-  file = "models/bf_grsm_new"
+  file = "models/bf_grsm_20"
 )
-bf_grsm_new <- add_criterion(bf_grsm_new, "loo")
+bf_grsm_20 <- add_criterion(bf_grsm_20, "loo", overwrite = TRUE)
+saveRDS(bf_grsm_20, "models/bf_grsm_20.rds")
 
 
-# --- 2. GRM (Family: cumulative) on Data 3 ---
+# --- 2. GRM  ---
 
-# CT-GRM (New)
-ct_grm_new <- brm(
+ct_grm_20 <- brm(
   formula = bf_ct_2pl,
   data = data_3,
-  family = brmsfamily("cumulative", "logit"), # Changed to cumulative for grm setting
+  family = brmsfamily("cumulative", "logit"),
   prior = priors_ct_2pl,
-  backend = "cmdstanr", 
+  backend = "cmdstanr",
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
-  file = "models/ct_grm_new"
+  file = "models/ct_grm_20"
 )
-ct_grm_new <- add_criterion(ct_grm_new, "loo", overwrite = TRUE)
-saveRDS(ct_grm_new, "models/ct_grm_new.rds")
+ct_grm_20 <- add_criterion(ct_grm_20, "loo", overwrite = TRUE)
+saveRDS(ct_grm_20, "models/ct_grm_20.rds")
 
-# BF-GRM (New)
-bf_grm_new <- brm(
+bf_grm_20 <- brm(
   formula = bf_bf_2pl,
   data = data_3,
-  family = brmsfamily("cumulative", "logit"), 
+  family = brmsfamily("cumulative", "logit"),
   prior = priors_bf_2pl,
-  backend = "cmdstanr", 
+  backend = "cmdstanr",
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
-  file = "models/bf_grm_new"
+  file = "models/bf_grm_20"
 )
-bf_grm_new <- add_criterion(bf_grm_new, "loo", overwrite = TRUE)
-saveRDS(bf_grm_new, "models/bf_grm_new.rds")
+bf_grm_20 <- add_criterion(bf_grm_20, "loo", overwrite = TRUE)
+saveRDS(bf_grm_20, "models/bf_grm_20.rds")
 
-# --- 3. GPCM on Data 3 ---
-# Formula: Needs cs(1) to allow thresholds to vary by item (Partial Credit)
+# --- 3. GPCM  ---
 
-# Define PCM Formulas
 bf_ct_gpcm <- bf(
   response ~ 1 + (cs(1) | item) + (0 + dim_m + dim_l + dim_p | id),
   disc ~ 1 + (1 | item)
 )
 
 bf_bf_gpcm <- bf(
-  response ~ 1 + (cs(1) | item) + 
+  response ~ 1 + (cs(1) | item) +
     (1 | id) + (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id),
   disc ~ 1 + (1 | item)
 )
 
-# Fit CT-PCM (New)
-ct_gpcm_new <- brm(
+ct_gpcm_20 <- brm(
   formula = bf_ct_gpcm,
   data = data_3,
   family = brmsfamily("acat", "logit"),
-  prior = priors_ct_2pl, 
-  backend = "cmdstanr",  
+  prior = priors_ct_2pl,
+  backend = "cmdstanr",
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
-  file = "models/ct_gpcm_new"
+  file = "models/ct_gpcm_20"
 )
-ct_gpcm_new <- add_criterion(ct_gpcm_new, "loo", overwrite = TRUE)
-saveRDS(ct_gpcm_new, "models/ct_gpcm_new.rds")
+ct_gpcm_20 <- add_criterion(ct_gpcm_20, "loo", overwrite = TRUE)
+saveRDS(ct_gpcm_20, "models/ct_gpcm_20.rds")
 
-# Fit BF-GPCM 
-bf_gpcm_new <- brm(
+bf_gpcm_20 <- brm(
   formula = bf_bf_gpcm,
   data = data_3,
   family = brmsfamily("acat", "logit"),
-  prior = priors_bf_2pl, 
-  backend = "cmdstanr",  
+  prior = priors_bf_2pl,
+  backend = "cmdstanr",
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
-  file = "models/bf_gpcm_new"
+  file = "models/bf_gpcm_20"
 )
-bf_gpcm_new <- add_criterion(bf_gpcm_new, "loo", overwrite = TRUE)
-saveRDS(bf_gpcm_new, "models/bf_gpcm_new.rds")
+bf_gpcm_20 <- add_criterion(bf_gpcm_20, "loo", overwrite = TRUE)
+saveRDS(bf_gpcm_20, "models/bf_gpcm_20.rds")
 ```
-
+## Model comparison: six-model LOO
+All six models share the same dataset (data_3, 20 items) and the same 
+4-category response variable, making LOO-CV comparison valid.
 
 ```{r}
 # Final 6-Model Comparison on Data 3
@@ -422,18 +517,53 @@ loo_compare(
   criterion = "loo"
 )
 
-model_weights (ct_grm_new,  bf_grm_new)
+```
+## Inspecting individual LOO diagnostics
+
+Individual LOO summaries reveal Pareto-k diagnostics for each model. 
+High Pareto-k values (> 0.7) indicate observations where the LOO 
+approximation may be unreliable. A model with the best ELPD but many 
+high Pareto-k values should be treated with caution.
+
+```{r}
+loo(ct_grsm_20)
+loo(bf_grsm_20)
+loo(ct_grm_20)
+loo(bf_grm_20)
+loo(ct_gpcm_20)
+loo(bf_gpcm_20)
 ```
 
-# Summary for final choice
+## Model weights
+
+
+```{r}
+# Stacking weights across all six models
+model_weights(
+  ct_grsm_20, bf_grsm_20,
+  ct_grm_20,  bf_grm_20,
+  ct_gpcm_20, bf_gpcm_20
+)
+
+# Direct comparison within the GRM family
+model_weights(ct_grm_20, bf_grm_20)
+
+```
+
+# Final model Wright map
 ```{r}
 source("scripts/07_fig6.R")
 
 fig_6
 ```
+# Step 6: Covariates and Differential Item Functioning
 
+DIF analysis tests whether individual items function differently across 
+demographic subgroups. In the Bayesian framework, this is implemented 
+by adding group variables as covariates with item-level random slopes, 
+enabling partial pooling across items.
 
-# DIF models
+## DIF model 1: Gender only
 ```{r}
 bf_dif <- bf(
   response ~ 1 + gender + (0 + gender | item) + 
@@ -451,10 +581,9 @@ bf_grm_dif <- brm(
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/bf_grm_dif"
 )
-
 ```
 
-
+## DIF model 2: Multiple covariates
 
 ```{r}
 
@@ -476,6 +605,17 @@ bf_grm_dif2 <- brm(
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/bf_grm_dif2"
 )
+```
+
+## DIF results
+
+```{r step6-results}
+summary(bf_grm_dif)
+summary(bf_grm_dif2)
+
+source("scripts/08_fig7.R")
+
+combined_plot
 ```
 
 
