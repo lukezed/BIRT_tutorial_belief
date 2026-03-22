@@ -38,7 +38,14 @@ p1 <- ranef_wc$item[, , "Intercept"] %>%
   
   scale_color_manual(values = custom_colors) +
   labs(title = "Item Difficulty", x = "Estimate", y = NULL) +
-  theme(legend.position = "none")
+theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 10, face = "bold"),
+    axis.title = element_text(size = 9),
+    axis.text = element_text(size = 7, color = "black")
+  )
 
 p2 <- ranef_wc$id[, , "Intercept"] %>%
   as_tibble(rownames = "person") %>%
@@ -49,7 +56,15 @@ p2 <- ranef_wc$id[, , "Intercept"] %>%
                   alpha = 0.8, linewidth = 0.7, size = 0.2, 
                   color = "black") + 
   coord_flip() +
-  labs(title = "Person Parameters", x = NULL, y = "Estimate") 
+  labs(title = "Person Parameters", x = NULL, y = "Estimate") +
+  theme_classic() + 
+  theme(
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 10, face = "bold"),
+    axis.title = element_text(size = 9),
+    axis.text = element_text(size = 7, color = "black")
+  )
+
 
 fig_4 <- p1 | p2
 print(fig_4)
@@ -57,8 +72,8 @@ print(fig_4)
 ggsave(
   filename = "figures/fig4_wright_map.png", 
   plot = fig_4, 
-  width = 7.5, 
+  width = 6.5, 
   height = 4, 
-  dpi = 300, 
+  dpi = 600, 
   bg = "white"
 )

@@ -44,7 +44,7 @@ fig_3 <- ggplot(plot_data, aes(x = response, y = percentage, fill = dimension)) 
   theme_minimal(base_size = 10) +
   
   theme(
-    text = element_text(family = "sans"),
+    text = element_text(family = "Helvetica", color = "black"),
     
     panel.grid.major.x = element_blank(),
     panel.grid.major.y = element_line(color = "grey92", linewidth = 0.3), 
@@ -53,15 +53,15 @@ fig_3 <- ggplot(plot_data, aes(x = response, y = percentage, fill = dimension)) 
     panel.border = element_rect(color = "grey85", fill = NA, linewidth = 0.5),
     
     axis.line.x = element_line(color = "grey80", linewidth = 0.3),
-    axis.text = element_text(color = "grey30", size = 7), 
-    axis.title.y = element_text(size = 9, margin = margin(r = 8)),
+    axis.text = element_text(color = "black", size = 6), 
+    axis.title.y = element_text(size = 9, margin = margin(r = 7)),
     
     strip.background = element_rect(fill = "white", color = NA),
-    strip.text = element_text(face = "bold", size = 8),
+    strip.text = element_text(face = "bold", size = 7),
 
     legend.position = "right",
-    legend.title = element_text(face = "bold", size = 9),
-    legend.text = element_text(size = 8),
+    legend.title = element_text(face = "bold", size = 7),
+    legend.text = element_text(size = 6),
     legend.key.size = unit(0.4, "cm"),
     legend.margin = margin(l = 5)
   )
@@ -69,9 +69,9 @@ fig_3 <- ggplot(plot_data, aes(x = response, y = percentage, fill = dimension)) 
 ggsave(
   filename = "figures/fig3_response_distribution.png", 
   plot = fig_3, 
-  width = 7.5, 
-  height = 5.5, 
-  dpi = 300, 
+  width = 6.5, 
+  height = 4.5, 
+  dpi = 600, 
   bg = "white",
   scale = 1 
 )

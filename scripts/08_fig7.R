@@ -17,15 +17,20 @@ item_order_final <- c(
 )
 
 
-theme_square <- theme_minimal(base_size = 9) +
+theme_square <- theme_classic(base_size = 9) + 
   theme(
+    text = element_text(family = "Helvetica", color = "black"), 
     plot.title = element_text(face = "bold", size = 10),
+    axis.title = element_text(size = 8),
+    axis.text = element_text(size = 7, color = "black"),
+    
     panel.grid = element_blank(),
     axis.line = element_line(color = "black", linewidth = 0.5),
     axis.ticks = element_line(color = "black", linewidth = 0.5),
     aspect.ratio = 1,
     legend.margin = margin(0,0,0,0),
-    legend.box.margin = margin(-5,-5,-5,-5)
+    legend.box.margin = margin(-5,-5,-5,-5),
+    legend.text = element_text(size = 8) 
   )
 
 # ==============================================================================
@@ -44,9 +49,9 @@ df_diag <- left_join(df_female, df_male, by = "item") %>%
 
 p1 <- ggplot(df_diag, aes(x = F_Est, y = M_Est, color = dimension)) +
   geom_abline(intercept = 0, slope = 1, color = "grey40", linetype = "dashed") +
-  geom_errorbar(aes(ymin = M_Low, ymax = M_High, alpha = alpha_val), width = 0, linewidth = 0.5) +
-  geom_errorbar(aes(xmin = F_Low, xmax = F_High, alpha = alpha_val), width = 0, linewidth = 0.5) +
-  geom_point(aes(shape = shape_val, alpha = alpha_val), size = 2.5) + 
+  geom_errorbar(aes(ymin = M_Low, ymax = M_High, alpha = alpha_val), width = 0, linewidth = 0.7) +
+  geom_errorbar(aes(xmin = F_Low, xmax = F_High, alpha = alpha_val), width = 0, linewidth = 0.7) +
+  geom_point(aes(shape = shape_val, alpha = alpha_val), size = 1.5) + 
   geom_text_repel(aes(label = ifelse(is_dif, as.character(item), "")), size = 2.5, fontface = "bold", max.overlaps = 20, show.legend = FALSE) +
   scale_color_manual(values = colors_dim) + scale_shape_identity() + scale_alpha_identity() + 
   coord_fixed(ratio = 1) + 
@@ -82,25 +87,40 @@ district_effects <- bind_rows(df_d2, df_d3) %>% mutate(item = factor(item, level
 p3 <- ggplot(district_effects, aes(x = Estimate, y = item, color = district)) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "grey40", linewidth = 0.5) +
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0, linewidth = 0.6, position = position_dodge(width = 0.6)) +
-  geom_point(size = 2, position = position_dodge(width = 0.6)) + 
+  geom_point(size = 1, position = position_dodge(width = 0.6)) + 
   labs(title = "C.", x = "Log-odds Difference", y = NULL) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   theme_square + 
-  theme(legend.position = "bottom", legend.title = element_blank())
+  theme(legend.position = "bottom", legend.title = element_blank()) + 
+  guides(color = guide_legend(override.aes = list(size = 1.5)))
 
 # ==============================================================================
 # P4: District Effect (Bottom-Right)
 # ==============================================================================
 p4_eff_dist <- conditional_effects(bf_grm_dif2, effects = "District", categorical = TRUE)
 
-p4 <- plot(p4_eff_dist, plot = FALSE)[[1]] +
-  labs(title = "D.") +
+df_p4 <- p4_eff_dist$District
+
+p4 <- ggplot(df_p4, aes(x = District, y = estimate__, color = cats__)) +
+  geom_errorbar(aes(ymin = lower__, ymax = upper__), 
+                width = 0.3, linewidth = 0.6, position = position_dodge(width = 0.5)) +
+  geom_point(size = 1.5, position = position_dodge(width = 0.5)) + 
+  
+  labs(title = "D.", x = "District", y = "Probability") +
   theme_square + 
-  theme(legend.position = "bottom", legend.title = element_blank())
+  theme(
+    legend.position = "bottom", 
+    legend.title = element_blank()
+  ) +
+  guides(color = guide_legend(override.aes = list(size = 1.5)))
 
+fig_7 <- (p1 | p2) / (p3 | p4)
 
-combined_plot <- (p1 | p2) / (p3 | p4)
+print(fig_7)
 
-print(combined_plot)
-
-ggsave("figures/fig7_combined_dif.png", combined_plot, width = 7.5, height = 8, dpi = 300, bg = "white")
+ggsave("figures/fig7_combined_dif.png",
+       fig_7, 
+       width = 6.5, 
+       height = 7,
+       dpi = 600,
+       bg = "white")

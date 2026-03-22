@@ -68,40 +68,75 @@ df_disc_bf <- exp(ranef_bf$item[, , "disc_Intercept"]) %>%
 
 # P1: CT Difficulty
 p1 <- ggplot(df_diff_ct, aes(x = Estimate, y = item, color = dimension)) +
-  geom_point(size = 2) + 
+  geom_point(size = 1) + 
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0.3, linewidth = 0.6) + 
   scale_color_manual(values = custom_colors) +
-  labs(title = "CT-GRSM: Difficulty", x = "Logits", y = NULL) +
-  theme(legend.position = "none")
+  labs(title = "CT-GRSM: Difficulty", x = NULL, y = NULL) +
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 7),
+    axis.text = element_text(size = 6, color = "black")
+  )
 
 # P2: CT Discrimination
 p2 <- ggplot(df_disc_ct, aes(x = Estimate, y = item, color = dimension)) +
   geom_vline(xintercept = 0.5, linetype = "dashed", color = "grey60", linewidth = 0.5) +
-  geom_point(size = 2) + 
+  geom_point(size = 1) + 
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0.3, linewidth = 0.6) + 
   scale_color_manual(values = custom_colors) +
-  labs(title = "CT-GRSM: Discrimination", x = "Slope (exp)", y = NULL) +
-  theme(legend.position = "none")
+  labs(title = "CT-GRSM: Discrimination", x = NULL, y = NULL) +
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 7),
+    axis.text = element_text(size = 6, color = "black"),
+    axis.text.y = element_blank()
+  )
 
 # P3: BF Difficulty
 p3 <- ggplot(df_diff_bf, aes(x = Estimate, y = item, color = dimension)) +
-  geom_point(size = 2) + 
+  geom_point(size = 1) + 
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0.3, linewidth = 0.6) + 
   scale_color_manual(values = custom_colors) +
-  labs(title = "BF-GRSM: Difficulty", x = "Logits", y = NULL) +
-  theme(legend.position = "none")
+  labs(title = "BF-GRSM: Difficulty", x = "Estimate", y = NULL) +
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 7),
+    axis.text = element_text(size = 6, color = "black")
+  )
 
 # P4: BF Discrimination
 p4 <- ggplot(df_disc_bf, aes(x = Estimate, y = item, color = dimension)) +
   geom_vline(xintercept = 0.5, linetype = "dashed", color = "grey60", linewidth = 0.5) +
-  geom_point(size = 2) + 
+  geom_point(size = 1) + 
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0.3, linewidth = 0.6) + 
   scale_color_manual(values = custom_colors) +
-  labs(title = "BF-GRSM: Discrimination", x = "Slope (exp)", y = NULL) +
-  theme(legend.position = "none")
+  labs(title = "BF-GRSM: Discrimination", x = "Estimate", y = NULL) +
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 7),
+    axis.text = element_text(size = 6, color = "black"),
+    axis.text.y = element_blank()
+  )
 
 fig_5 <- (p1 | p2) / (p3 | p4)
 
 print(fig_5)
 
-ggsave("figures/fig5_model_comparison.png", fig_5, width = 7.5, height = 7.5, dpi = 300, bg = "white")
+ggsave("figures/fig5_model_comparison.png", 
+       fig_5, 
+       width = 6.5,
+       height = 6, 
+       dpi = 600,
+       bg = "white")

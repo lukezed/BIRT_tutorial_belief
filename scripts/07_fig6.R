@@ -1,6 +1,6 @@
 # scripts/07_fig6.R
 source("scripts/00_packages.R")
-bf_grm_new <- readRDS("models/bf_grm_new.rds")
+bf_grm_20 <- readRDS("models/bf_grm_20.rds")
 
 item_order_final <- c(
   "Bm_5", "Bm_6", "Bm_7", "Bm_8",
@@ -15,7 +15,7 @@ colors_dim <- c(
   "Bp (Pedagogy)" = "#0072B2"
 )
 
-ranef_all <- ranef(bf_grm_new)
+ranef_all <- ranef(bf_grm_20)
 
 
 # Data Preparation
@@ -43,20 +43,36 @@ df_disc <- exp(ranef_all$item[, , "disc_Intercept"]) %>%
 
 # Plot 1: Difficulty
 p1 <- ggplot(df_diff, aes(x = Estimate, y = item, color = dimension)) +
-  geom_point(size = 2) + 
+  geom_point(size = 1.5) + 
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0.3, linewidth = 0.6) + 
   scale_color_manual(values = colors_dim) +
   labs(title = "Item Difficulty", x = NULL, y = NULL) +
-  theme(legend.position = "none")
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 7),
+    axis.text = element_text(size = 6, color = "black")
+  )
 
 # Plot 2: Discrimination
 p2 <- ggplot(df_disc, aes(x = Estimate, y = item, color = dimension)) +
-  geom_vline(xintercept = 0.5, linetype = "dashed", color = "grey60", linewidth = 0.5) +
-  geom_point(size = 2) + 
+  geom_point(size = 1.5) + 
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0.3, linewidth = 0.6) + 
   scale_color_manual(values = colors_dim) +
   labs(title = "Item Discrimination", x = NULL, y = NULL) +
-  theme(legend.position = "none")
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 7),
+    axis.text.x = element_text(size = 6, color = "black"),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
 
 
 df_gen <- ranef_all$id[, , "Intercept"] %>%
@@ -82,44 +98,79 @@ global_ylim <- range(all_values, na.rm = TRUE)
 # P3: General
 p3 <- ggplot(df_gen, aes(x = id, y = Estimate)) +
   geom_pointrange(aes(ymin = Q2.5, ymax = Q97.5), 
-                  color = "black", alpha = 0.9, linewidth = 0.4, size = 0.2) +
+                  color = "black", alpha = 0.85, linewidth = 0.4, size = 0.1) +
   coord_flip() +
   ylim(global_ylim) + 
   labs(title = "General Belief", x = NULL, y = NULL) +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(), panel.grid = element_blank())
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 8, face = "bold"),
+    axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+    axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank()
+  )
 
 # P4: Math
 p4 <- ggplot(df_m, aes(x = id, y = Estimate)) +
   geom_pointrange(aes(ymin = Q2.5, ymax = Q97.5), 
-                  color = "#555555", alpha = 0.9, linewidth = 0.4, size = 0.2) +
+                  color = "#555555", alpha = 0.85, linewidth = 0.4, size = 0.1) +
   coord_flip() +
   ylim(global_ylim) + 
   labs(title = "Belief about Math", x = NULL, y = NULL) +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(), panel.grid = element_blank())
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 8, face = "bold"),
+    axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+    axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank()
+  )
 
 # P5: Learner
 p5 <- ggplot(df_l, aes(x = id, y = Estimate)) +
   geom_pointrange(aes(ymin = Q2.5, ymax = Q97.5), 
-                  color = "#E69F00", alpha = 0.9, linewidth = 0.4, size = 0.2) +
+                  color = "#E69F00",alpha = 0.85, linewidth = 0.4, size = 0.1) +
   coord_flip() +
   ylim(global_ylim) + 
   labs(title = "Belief about Learners", x = NULL, y = NULL) +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(), panel.grid = element_blank())
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 7),
+    axis.text.x = element_text(size = 6, color = "black"),
+    axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank()
+  )
 
 # P6: Pedagogy
 p6 <- ggplot(df_p, aes(x = id, y = Estimate)) +
   geom_pointrange(aes(ymin = Q2.5, ymax = Q97.5), 
-                  color = "#0072B2", alpha = 0.9, linewidth = 0.4, size = 0.2) +
+                  color = "#0072B2", alpha = 0.85, linewidth = 0.4, size = 0.1) +
   coord_flip() +
   ylim(global_ylim) + 
   labs(title = "Belief about Pedagogy", x = NULL, y = NULL) +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(), panel.grid = element_blank())
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Helvetica", color = "black"),
+    plot.title = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 7),
+    axis.text.x = element_text(size = 6, color = "black"),
+    axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank()
+  )
 
 
 
 fig_6 <- (p1 | p2) / (p3 | p4) / (p5 | p6) + 
-  plot_layout(heights = c(1.4, 1, 1))
+  plot_layout(heights = c(1.5, 1, 1))
 
 print(fig_6)
 
-ggsave("figures/fig6_final_diagnostics.png", fig_6, width = 7.5, height = 9, dpi = 300, bg = "white")
+ggsave("figures/fig6_final_diagnostics.png",
+       fig_6, 
+       width = 6.5,
+       height = 8,
+       dpi = 600, 
+       bg = "white")
