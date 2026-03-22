@@ -54,6 +54,7 @@ format:
     keep-tex: true
     dev: pdf
     mainfont: "Times New Roman"
+    tbl-cap-location: top
 
 header-includes:
   - \makeatletter
@@ -61,9 +62,273 @@ header-includes:
   - \makeatother
 ---
 
+# Introduction
 
+# Bayesian IRT: A brief overview
+
+# Diaggnostic toolkit
+
+# Case study: Data and setup
+
+## Case Study: Data and Setup
+
+### Dataset
+
+The case study uses questionnaire data from secondary mathematics teachers (*n* = 155) in public schools across three urban districts in a city in Zhejiang province, China. The three districts are coded 1, 2, and 3 in descending order of socioeconomic status. Three demographic variables were retained for subsequent differential item functioning analysis: teacher gender (male/female), school district (1/2/3), and the year group taught (7/8/9).
+
+### Instrument
+
+The instrument comprises 24 items measuring the degree to which teachers hold inclusive, equity-oriented beliefs about mathematics education, as opposed to more traditional or exclusionary orientations. It was adapted from the Teacher Education and Development Study in Mathematics (TEDS-M; Tatto, 2013) with cultural modifications for the Chinese context (e.g., replacing references to "hands-on experiences" with locally recognisable pedagogical reforms such as project-based learning). Items are organised into three subscales:
+
+-   *Beliefs about mathematics* (Bm, 8 items) assess whether teachers view mathematics as a fixed body of rules or as a creative, applied discipline. Items endorsing a formalist view are reverse-coded (e.g., "Mathematics is a collection of rules and procedures" \[Bm_1_r, reverse-coded\]).
+-   *Beliefs about learners* (Bl, 11 items) assess whether teachers believe mathematical ability is innate and fixed or accessible to all students (e.g., "To be good at mathematics one needs to be talented" \[Bl_7_r, reverse-coded\]).
+-   *Beliefs about pedagogy* (Bp, 5 items) assess teachers' receptiveness to innovative and student-centred teaching approaches (e.g., "I'm continuously seeking better ways to teach mathematics" \[Bp_3\]).
+
+Teachers responded on a 5-point Likert scale from "strongly disagree" to "strongly agree." The full item list is provided in Appendix B.
+
+The instrument's three-dimensional design, grounded in frameworks distinguishing what mathematics is, who can learn it, and how it should be taught (Felton-Koestler, 2017), naturally motivates competing structural hypotheses for IRT modelling.
+
+### Competing structural hypotheses
+
+Given the instrument's multidimensional design, we consider three structural hypotheses representing increasingly complex assumptions about the latent space [@fig-hypotheses]. Each hypothesis is grounded in distinct theoretical perspectives on how teacher beliefs are organised.
+
+![Graphical representation of three competing dimensional structures for the equity belief instrument. Top panel: unidimensional model. Middle panel: correlated-traits model. Bottom panel: bi-factor model.](../figures/fig2.png){#fig-hypotheses width="70%"}
+
+In the notation below, $\eta_{pi}$ denotes the linear predictor for person $p$ on item $i$ (mapped to category probabilities by the ordinal link function), $\beta_0$ is the fixed intercept, $\xi_i$ is item $i$'s difficulty, and $\mathbb{I}_{id}$ is a binary indicator assigning item $i$ to dimension $d \in \{M, L, P\}$.
+
+*Unidimensional.* The simplest assumption is that all items measure a single continuum of inclusive belief. This implies that teachers' orientations toward mathematics, learners, and pedagogy vary in concert, so that a single latent trait $\theta_p$ suffices:
+
+$$
+\eta_{pi} = \beta_0 + \xi_i + \theta_p
+$$
+
+*Correlated traits.* According to belief cluster theory (Green, 1971), teachers' beliefs are not monolithic but organised in clusters that may develop and function semi-independently. Applied to this instrument, the three subscales may represent distinct yet interconnected belief clusters, allowing, for instance, a teacher to hold formalist views of mathematics while still believing most students can succeed. Each person is then characterised by a vector $\boldsymbol{\theta}_p = (\theta_{pM}, \theta_{pL}, \theta_{pP})^\top
+\sim \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma})$ with an unrestricted covariance matrix:
+
+$$
+\eta_{pi} = \beta_0 + \xi_i 
+  + \sum_{d \in \{M,L,P\}} \mathbb{I}_{id}\, \theta_{pd}
+$$
+
+*Bi-factor.* Belief system theories (Green, 1971; Rokeach, 1968) further propose that beliefs form hierarchical networks in which some core beliefs are stable and broadly influential, while others are more peripheral and context-dependent. Statistically, this implies a bi-factor structure: a general inclusive belief factor captures the shared variance across all items, while dimension-specific residual factors capture variation not explained by the general factor. A general trait $\theta_p$ is added alongside orthogonal specific factors $\theta_{pd}^{s}$:
+
+$$
+\eta_{pi} = \beta_0 + \xi_i + \theta_p 
+  + \sum_{d \in \{M,L,P\}} \mathbb{I}_{id}\, \theta_{pd}^{s}
+$$
+
+The orthogonality constraint $\text{Cov}(\theta_p, \theta_{pd}^{s}) = 0$ is imposed here.[^1] Its implementation in brms is discussed in Section 5.2. All three hypotheses can be combined with any of the ordinal link functions described in Appendix A; competing combinations are systematically compared in the workflow.
+
+[^1]: It is possible to relax this constraint and estimate correlations between the general and specific factors. However, doing so introduces identification difficulties, as the model must distinguish general-factor variance from correlated specific-factor variance using the same set of item responses. With small samples this also raises the risk of overfitting, where the additional covariance parameters absorb noise rather than capturing meaningful structure.
+
+### Computational setup
+
+All models were fitted in R using the brms package (Bürkner, 2017), which interfaces with Stan (Carpenter et al., 2017) for Hamiltonian Monte Carlo sampling. Each model used 4 chains with 4,000 iterations per chain (2,000 warmup), yielding 8,000 post-warmup draws for inference. Weakly informative priors were specified following @burkner2021bayesi : $\mathcal{N}(0, 3)$ for person and item random effect standard deviations, $\mathcal{N}(0, 1)$ for log-discrimination parameters, and $\text{LKJ}(2)$ for correlation matrices in the correlated-traits models.[^2] Convergence was assessed by confirming $\hat{R} < 1.01$ for all parameters, adequate bulk and tail effective sample sizes, and no persistent divergent transitions. Additional sampler settings introduced for complex multidimensional models are discussed alongside the relevant workflow steps. Complete code is provided in the companion repository.
+
+[^2]: The LKJ prior (Lewandowski, Kurowicka, & Joe, 2009) is a distribution over correlation matrices. The shape parameter $\eta$ controls the density: $\eta = 1$ is uniform over all valid correlation matrices; $\eta > 1$ increasingly concentrates density near the identity matrix, favouring smaller correlations. We use $\eta = 2$ as a mild regularising choice.
+
+\newpage
 
 # References
-
 ::: {#refs}
 :::
+
+\newpage
+
+# Model specifications {#apx-models}
+
+This appendix provides detailed mathematical specifications of the ordinal IRT models used in this study. All models are extensions of IRT for ordered categorical responses, differing in their link functions, threshold parameterisations, and discrimination constraints. Implementation details in brms are provided in the main text and companion repository.
+
+## Ordinal Link Functions and Threshold Parameterisations
+
+### Rating Scale Model (RSM)
+
+The RSM uses the adjacent-category logit link with shared thresholds. The probability of person $p$ responding in category $c$ ($c = 1, \ldots, C$) to item $i$ is:
+
+$$
+P(Y_{pi} = c) = \frac{\exp \sum_{j=1}^{c} (\theta_p + \xi_i - \tau_j)}{\sum_{r=1}^{C} \exp \sum_{j=1}^{r} (\theta_p + \xi_i - \tau_j)}
+$$
+
+where $\theta_p$ is the latent trait of person $p$, $\xi_i$ is the item-specific location (random intercept; more negative = harder to endorse), and $\tau_j$ is the $j$-th threshold parameter. A key constraint of the RSM is that thresholds $\tau_j$ are shared across all items, assuming equal category spacing across the instrument.
+
+### Generalised Rating Scale Model (GRSM)
+
+Introducing item-specific discrimination parameters $\alpha_i$ to the RSM yields the GRSM:
+
+$$
+P(Y_{pi} = c) = \frac{\exp \sum_{j=1}^{c} \alpha_i(\theta_p + \xi_i - \tau_j)}{\sum_{r=1}^{C} \exp \sum_{j=1}^{r} \alpha_i(\theta_p + \xi_i - \tau_j)}
+$$
+
+Higher $\alpha_i$ values indicate items that more sharply differentiate between respondents at different trait levels. Thresholds remain shared across items.
+
+### Generalised Partial Credit Model (GPCM)
+
+The GPCM combines item-specific discrimination with item-specific thresholds $\tau_{i,j}$:
+
+$$
+P(Y_{pi} = c) = \frac{\exp \sum_{j=1}^{c} \alpha_i(\theta_p + \xi_i - \tau_{i,j})}{\sum_{r=1}^{C} \exp \sum_{j=1}^{r} \alpha_i(\theta_p + \xi_i - \tau_{i,j})}
+$$
+
+Unlike the GRSM, which constrains all items to share the same threshold spacing, the GPCM allows each item to have its own set of threshold parameters. This provides the most flexible parameterisation within the adjacent-category family, but requires estimating substantially more parameters, which can compromise stability with small samples.
+### Graded Response Model (GRM)
+
+The GRM uses the cumulative logit link rather than the adjacent-category logit. In its general form (Samejima, 2016), the GRM allows fully item-specific thresholds. The implementation used in this study is a constrained variant in which threshold spacing is shared across items, with item differences captured through a location parameter $\xi_i$ that shifts all thresholds equally. The probability of responding in category $c$ is defined as:
+
+$$
+P(Y_{pi} = c) = F\!\left(\alpha_i(\eta_{pi} - \tau_{c-1})\right) - F\!\left(\alpha_i(\eta_{pi} - \tau_c)\right)
+$$
+
+where $\eta_{pi} = \theta_p + \xi_i$ is the person-by-item location, $F(x) = \frac{1}{1 + \exp(-x)}$ is the logistic CDF, $\alpha_i$ is item discrimination, and the thresholds are ordered: $\tau_1 < \cdots < \tau_{C-1}$, with boundary conditions $\tau_0 = -\infty$ and $\tau_C = +\infty$. The thresholds $\tau_c$ are shared population-level parameters; item $i$'s effective thresholds are $\tau_c - \xi_i$, preserving equal inter-threshold spacing across items.
+
+The GRM directly models the cumulative probability $P(Y_{pi} \geq c)$, in contrast to the adjacent-category models which model the odds of each category relative to its neighbour.
+
+\newpage
+
+### Summary of Model Families
+
+\begingroup
+\fontsize{10.5pt}{12.6pt}\selectfont
+
+| Model | Link | Thresholds | Discrimination |
+|:--------------|:--------------|:--------------|:--------------|
+| RSM | Adjacent-category | Shared | Equal ($\alpha = 1$) |
+| GRSM | Adjacent-category | Shared | Item-specific |
+| GPCM | Adjacent-category | Item-specific | Item-specific |
+| GRM | Cumulative | Shared (equal spacing) | Item-specific |
+
+: Summary of ordinal IRT model families used in this study. RSM, GRSM, and GRM share threshold spacing across items; item differences enter only through the location parameter $\xi_i$. GPCM allows fully item-specific thresholds. The generalised forms (GRSM, GPCM, GRM) estimate item-specific discrimination. {#tbl-models tbl-colwidths="[15,25,30,30]"}
+
+\endgroup
+
+## Dimensional Structures
+
+All models in this study are implemented as generalised linear mixed models (GLMMs) in brms, following the framework described in De Boeck et al. (2011) and Bürkner (2021).
+
+### Unidimensional IRT
+
+$$
+\eta_{pi} = \beta_0 + \xi_i + \theta_p
+$$
+
+where $\beta_0$ is the fixed intercept, $\xi_i \sim \mathcal{N}(0, \sigma^2_{\text{item}})$ is the item-specific random intercept, and $\theta_p \sim \mathcal{N}(0, \sigma^2_{\theta})$ is the person-specific random effect.
+
+### Correlated-Traits MIRT (CT-MIRT)
+
+Each person $p$ has a vector of dimension-specific traits:
+
+$$
+\boldsymbol{\theta}_p = (\theta_{pM}, \theta_{pL}, \theta_{pP})^\top \sim \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma})
+$$
+
+where $\boldsymbol{\Sigma}$ is a $3 \times 3$ covariance matrix. The linear predictor is:
+
+$$
+\eta_{pi} = \beta_0 + \xi_i + \sum_{d \in \{M, L, P\}} \mathbb{I}_{id}\, \theta_{pd}
+$$
+
+where $\mathbb{I}_{id} = 1$ if item $i$ belongs to dimension $d$ and 0 otherwise (each item loads on exactly one dimension). The unrestricted covariance matrix $\boldsymbol{\Sigma}$ allows the three latent dimensions to correlate freely, reflecting the possibility that the dimensions are distinct but related constructs.
+
+### Bi-Factor MIRT (BF-MIRT)
+
+A general factor $\theta_p$ is added alongside dimension-specific factors $\theta_{pd}^{s}$:
+
+$$
+\eta_{pi} = \beta_0 + \xi_i + \theta_p + \sum_{d \in \{M, L, P\}} \mathbb{I}_{id}\, \theta_{pd}^{s}
+$$
+
+where $\theta_p \sim \mathcal{N}(0, \sigma^2_{\theta})$ and $\theta_{pd}^{s} \sim \mathcal{N}(0, \sigma^2_{d})$. The general and specific factors are constrained to be orthogonal:
+
+$$
+\text{Cov}(\theta_p, \theta_{pd}^{s}) = 0 \quad \forall\, d
+$$
+
+This constraint ensures that the specific factors capture only residual variation within each dimension after accounting for the general factor. The distinction from CT-MIRT is structural: the correlated-traits model permits free correlations among dimension-specific traits but includes no general factor, whereas the bi-factor model decomposes variance into a general component shared across all items and orthogonal dimension-specific residuals.
+
+\newpage
+
+## Prior Distributions
+
+Weakly informative priors are used throughout, following recommendations in Bürkner (2021):
+
+\begingroup
+\fontsize{10.5pt}{12.6pt}\selectfont
+
+| Parameter | Prior | Rationale |
+|:-----------------------|:-----------------------|:-----------------------|
+| Person and item SDs ($\sigma_\theta$, $\sigma_{\text{item}}$) | $\mathcal{N}(0, 3)$ | Half-normal (truncated at 0); allows substantial variation while regularising. |
+| Log-discrimination SD | $\mathcal{N}(0, 1)$ | Covers discrimination values roughly in $[0.14, 7.4]$. |
+| Correlation matrix (CT-MIRT) | $\text{LKJ}(2)$ | Mildly favours smaller correlations; $\eta > 1$ concentrates density near the identity matrix. |
+
+: Prior distributions for all model parameters. {#tbl-priors tbl-colwidths="[35,20,45]"}
+
+\endgroup
+
+\newpage
+
+# Instrument items {#apx-items}
+
+Teachers were asked to report their endorsement of each statement on a 5-point Likert scale from "strongly disagree" (1) to "strongly agree" (5). Items ending with `_r` are reverse-coded: responses are recoded prior to analysis so that higher scores consistently reflect stronger endorsement of inclusive and equity-oriented beliefs.
+
+## Bm: Beliefs About Mathematics (8 Items)
+
+\begingroup
+\fontsize{10.5pt}{12.6pt}\selectfont
+
+| Item | Statement |
+|:-----------------------------------|:-----------------------------------|
+| Bm_1_r | Mathematics is a collection of rules and procedures. |
+| Bm_2_r | Mathematics involves remembering and applying definitions, formulas, mathematical facts and procedures. |
+| Bm_3_r | To do mathematics requires much practice of correct application of routines. |
+| Bm_4_r | When solving mathematical tasks you need to know the correct procedure in advance. |
+| Bm_5 | Mathematics involves creativity and new ideas. |
+| Bm_6 | Many aspects of mathematics have practical relevance. |
+| Bm_7 | Mathematics helps solve everyday problems and tasks. |
+| Bm_8 | In mathematics many things can be discovered and tried out by oneself. |
+
+: Beliefs about mathematics items. {#tbl-item-bm tbl-colwidths="[15,85]"}
+
+*Note.* Items Bm_1_r through Bm_4_r were removed during the workflow due to poor psychometric properties. The final model was fitted on the remaining 20 items.
+\endgroup
+
+\newpage
+
+## Bl: Beliefs About Learners (11 Items)
+
+\begingroup
+\fontsize{10.5pt}{12.6pt}\selectfont
+
+| Item | Statement |
+|:-----------------------------------|:-----------------------------------|
+| Bl_1_r | Students must be able to solve mathematics problems quickly. |
+| Bl_2 | Students must be able to understand why the answer is correct. |
+| Bl_3_r | Students learn mathematics best by attending to the teacher's standard explanations. |
+| Bl_4_r | For students, non-standard procedures can interfere with learning the correct procedure. |
+| Bl_5 | Students can figure out a way to solve mathematical problems without a teacher's help. |
+| Bl_6_r | Only the more able students can participate in mathematics activities. |
+| Bl_7_r | To be good at mathematics one needs to be talented. |
+| Bl_8_r | Among other forms of talent, mathematical talent is relatively fixed. |
+| Bl_9_r | Boys tend to be more talented in mathematics than girls. |
+| Bl_10_r | Attention to mathematically weak students can interfere with the learning experience of other students. |
+| Bl_11_r | Attention to mathematically talented students can interfere with the learning experience of other students. |
+
+: Beliefs about learners items. {#tbl-item-bl tbl-colwidths="[15,85]"}
+
+\endgroup
+
+## Bp: Beliefs About Pedagogy (5 Items)
+
+\begingroup
+\fontsize{10.5pt}{12.6pt}\selectfont
+
+| Item | Statement |
+|:-----------------------------------|:-----------------------------------|
+| Bp_1_r | Innovative pedagogy (e.g., project-based learning, flipped classroom) is not worth the time and expense. |
+| Bp_2_r | Innovative pedagogy (e.g., project-based learning, flipped classroom) should only play a minor, supplementary role in the mathematics classroom. |
+| Bp_3 | I'm continuously seeking better ways to teach mathematics. |
+| Bp_4 | Teachers should help students using mathematics to critically analyse the world. |
+| Bp_5 | Discussion of social issues should be involved in the maths classroom. |
+
+: Beliefs about pedagogy items. {#tbl-item-bp tbl-colwidths="[15,85]"}
+
+\endgroup
+
