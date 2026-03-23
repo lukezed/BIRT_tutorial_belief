@@ -70,15 +70,14 @@ header-includes:
 
 # Case study: Data and setup
 
-## Case Study: Data and Setup
 
-### Dataset
+## Dataset
 
 The case study uses questionnaire data from secondary mathematics teachers (*n* = 155) in public schools across three urban districts in a city in Zhejiang province, China. The three districts are coded 1, 2, and 3 in descending order of socioeconomic status. Three demographic variables were retained for subsequent differential item functioning analysis: teacher gender (male/female), school district (1/2/3), and the year group taught (7/8/9).
 
-### Instrument
+## Instrument
 
-The instrument comprises 24 items measuring the degree to which teachers hold inclusive, equity-oriented beliefs about mathematics education, as opposed to more traditional or exclusionary orientations. It was adapted from the Teacher Education and Development Study in Mathematics (TEDS-M; Tatto, 2013) with cultural modifications for the Chinese context (e.g., replacing references to "hands-on experiences" with locally recognisable pedagogical reforms such as project-based learning). Items are organised into three subscales:
+The instrument comprises 24 items measuring the degree to which teachers hold inclusive, equity-oriented beliefs about mathematics education, as opposed to more traditional or exclusionary orientations. It was adapted from the Teacher Education and Development Study in Mathematics [TEDS-M; @tatto2013teachea] with cultural modifications for the Chinese context (e.g., replacing references to "hands-on experiences" with locally recognisable pedagogical reforms such as project-based learning). Items are organised into three subscales:
 
 -   *Beliefs about mathematics* (Bm, 8 items) assess whether teachers view mathematics as a fixed body of rules or as a creative, applied discipline. Items endorsing a formalist view are reverse-coded (e.g., "Mathematics is a collection of rules and procedures" \[Bm_1_r, reverse-coded\]).
 -   *Beliefs about learners* (Bl, 11 items) assess whether teachers believe mathematical ability is innate and fixed or accessible to all students (e.g., "To be good at mathematics one needs to be talented" \[Bl_7_r, reverse-coded\]).
@@ -86,9 +85,9 @@ The instrument comprises 24 items measuring the degree to which teachers hold in
 
 Teachers responded on a 5-point Likert scale from "strongly disagree" to "strongly agree." The full item list is provided in Appendix B.
 
-The instrument's three-dimensional design, grounded in frameworks distinguishing what mathematics is, who can learn it, and how it should be taught (Felton-Koestler, 2017), naturally motivates competing structural hypotheses for IRT modelling.
+The instrument's three-dimensional design, grounded in frameworks distinguishing what mathematics is, who can learn it, and how it should be taught [@felton-koestler2017mathem], naturally motivates competing structural hypotheses for IRT modelling.
 
-### Competing structural hypotheses
+## Competing structural hypotheses
 
 Given the instrument's multidimensional design, we consider three structural hypotheses representing increasingly complex assumptions about the latent space [@fig-hypotheses]. Each hypothesis is grounded in distinct theoretical perspectives on how teacher beliefs are organised.
 
@@ -100,40 +99,123 @@ In the notation below, $\eta_{pi}$ denotes the linear predictor for person $p$ o
 
 $$
 \eta_{pi} = \beta_0 + \xi_i + \theta_p
-$$
+$$ {#eq-uni}
 
-*Correlated traits.* According to belief cluster theory (Green, 1971), teachers' beliefs are not monolithic but organised in clusters that may develop and function semi-independently. Applied to this instrument, the three subscales may represent distinct yet interconnected belief clusters, allowing, for instance, a teacher to hold formalist views of mathematics while still believing most students can succeed. Each person is then characterised by a vector $\boldsymbol{\theta}_p = (\theta_{pM}, \theta_{pL}, \theta_{pP})^\top
+*Correlated traits.* According to belief cluster theory [@green1971activia], teachers' beliefs are not monolithic but organised in clusters that may develop and function semi-independently. Applied to this instrument, the three subscales may represent distinct yet interconnected belief clusters, allowing, for instance, a teacher to hold formalist views of mathematics while still believing most students can succeed. Each person is then characterised by a vector $\boldsymbol{\theta}_p = (\theta_{pM}, \theta_{pL}, \theta_{pP})^\top
 \sim \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma})$ with an unrestricted covariance matrix:
 
 $$
 \eta_{pi} = \beta_0 + \xi_i 
   + \sum_{d \in \{M,L,P\}} \mathbb{I}_{id}\, \theta_{pd}
-$$
+$$ {#eq-ct}
 
-*Bi-factor.* Belief system theories (Green, 1971; Rokeach, 1968) further propose that beliefs form hierarchical networks in which some core beliefs are stable and broadly influential, while others are more peripheral and context-dependent. Statistically, this implies a bi-factor structure: a general inclusive belief factor captures the shared variance across all items, while dimension-specific residual factors capture variation not explained by the general factor. A general trait $\theta_p$ is added alongside orthogonal specific factors $\theta_{pd}^{s}$:
+*Bi-factor.* Belief system theories [@green1971activia; @rokeach1968theorya] further propose that beliefs form hierarchical networks in which some core beliefs are stable and broadly influential, while others are more peripheral and context-dependent. Statistically, this implies a bi-factor structure: a general inclusive belief factor captures the shared variance across all items, while dimension-specific residual factors capture variation not explained by the general factor. A general trait $\theta_p$ is added alongside orthogonal specific factors $\theta_{pd}^{s}$:
 
 $$
 \eta_{pi} = \beta_0 + \xi_i + \theta_p 
   + \sum_{d \in \{M,L,P\}} \mathbb{I}_{id}\, \theta_{pd}^{s}
-$$
+$$ {#eq-bf}
 
-The orthogonality constraint $\text{Cov}(\theta_p, \theta_{pd}^{s}) = 0$ is imposed here.[^1] Its implementation in brms is discussed in Section 5.2. All three hypotheses can be combined with any of the ordinal link functions described in Appendix A; competing combinations are systematically compared in the workflow.
+The orthogonality constraint $\text{Cov}(\theta_p, \theta_{pd}^{s}) = 0$ is imposed here.[^1] Competing combinations are systematically compared in the workflow later (also see @apx-models for modelling details).
 
 [^1]: It is possible to relax this constraint and estimate correlations between the general and specific factors. However, doing so introduces identification difficulties, as the model must distinguish general-factor variance from correlated specific-factor variance using the same set of item responses. With small samples this also raises the risk of overfitting, where the additional covariance parameters absorb noise rather than capturing meaningful structure.
 
-### Computational setup
+## Computational setup
 
-All models were fitted in R using the brms package (Bürkner, 2017), which interfaces with Stan (Carpenter et al., 2017) for Hamiltonian Monte Carlo sampling. Each model used 4 chains with 4,000 iterations per chain (2,000 warmup), yielding 8,000 post-warmup draws for inference. Weakly informative priors were specified following @burkner2021bayesi : $\mathcal{N}(0, 3)$ for person and item random effect standard deviations, $\mathcal{N}(0, 1)$ for log-discrimination parameters, and $\text{LKJ}(2)$ for correlation matrices in the correlated-traits models.[^2] Convergence was assessed by confirming $\hat{R} < 1.01$ for all parameters, adequate bulk and tail effective sample sizes, and no persistent divergent transitions. Additional sampler settings introduced for complex multidimensional models are discussed alongside the relevant workflow steps. Complete code is provided in the companion repository.
+All models were fitted in R using the brms package [@burkner2017brmsb], which interfaces with Stan [@carpenter2017stana] for Hamiltonian Monte Carlo sampling. Each model used 4 chains with 4,000 iterations per chain (2,000 warmup), yielding 8,000 post-warmup draws for inference. Weakly informative priors were specified following @burkner2021bayesi: $\mathcal{N}(0, 3)$ for person and item random effect standard deviations, $\mathcal{N}(0, 1)$ for log-discrimination parameters, and $\text{LKJ}(2)$ for correlation matrices in the correlated-traits models.[^2] Convergence was assessed by confirming $\hat{R} < 1.01$ for all parameters, adequate bulk and tail effective sample sizes, and no persistent divergent transitions. Additional sampler settings introduced for complex multidimensional models are discussed alongside the relevant workflow steps. Complete code is provided in the companion repository.
 
-[^2]: The LKJ prior (Lewandowski, Kurowicka, & Joe, 2009) is a distribution over correlation matrices. The shape parameter $\eta$ controls the density: $\eta = 1$ is uniform over all valid correlation matrices; $\eta > 1$ increasingly concentrates density near the identity matrix, favouring smaller correlations. We use $\eta = 2$ as a mild regularising choice.
+[^2]: The LKJ prior [@lewandowski2009genera] is a distribution over correlation matrices. We use $\eta = 2$ as a mild regularising choice.
 
-\newpage
+
+# Applying the workflow
+
+## Step 1: Preprocessing sparse response categories
+
+We begin by inspecting the observed response distributions. @fig-response-dist shows the item-level frequency distributions across the original 5-point scale.
+
+![Item-level response distributions across the original 5-point scale, coloured by subscale dimension.](../figures/fig3_response_distribution.png){#fig-response-dist width="95%"}
+
+A small number of respondents answered only the first few items and left all remaining items blank, likely reflecting disengagement. Because IRT models use full information likelihood, each response contributes independently to estimation regardless of whether the respondent completed the full instrument, so these cases were retained without special treatment.
+
+More consequential is the sparsity of the lowest response category. Category 1 ("strongly disagree") was very rarely endorsed: twelve of 24 items received fewer than three responses in this category. When very few respondents select a given category, the model lacks sufficient information to identify the threshold involving that category. Bayesian priors can regularise the estimate to prevent divergence, but the resulting posterior will be prior-dominated rather than data-informed. This is an information problem that no estimation framework can resolve, and it motivates collapsing categories 1 and 2 into a single "disagree" category, reducing the scale from five to four ordered levels. The decision is also justified on semantic grounds: both categories represent forms of disagreement, whereas merging the two middle categories would conflate "disagree" and "neutral," which are substantively distinct.
+
+Before collapsing, we can first fitted a baseline Rating Scale Model (RSM) to the original 5-point data to inspect the threshold structure. In `brms`, the RSM is specified using `brmsfamily("acat", "logit")`, where `acat` denotes the adjacent-category parameterisation (modelling the odds of each response category relative to its neighbour) and `logit` specifies the logistic link function.
+
+```r
+null_rsm <- brm(
+  formula = response ~ 1 + (1 | item) + (1 | id),
+  data = data_1,
+  family = brmsfamily("acat", "logit"),
+  prior = prior(normal(0, 3), class = "sd")
+)
+```
+
+\fontsize{10.5pt}{12.6pt}\selectfont
+
+| Threshold Transition | Estimate | 95% CrI |
+|:---|---:|---:|
+| 1: "strongly disagree" to "disagree" | $-3.08$ | $[-3.57, -2.61]$ |
+| 2: "disagree" to "neutral" | $-0.38$ | $[-0.86, 0.06]$ |
+| 3: "neutral" to "agree" | $-0.56$ | $[-1.02, -0.12]$ |
+| 4: "agree" to "strongly agree" | $2.16$ | $[1.70, 2.62]$ |
+
+: Threshold estimates from the baseline RSM fitted to the original 5-point response scale. {#tbl-thresh-null tbl-colwidths="false"}
+
+\normalsize
+
+As shown in @tbl-thresh-null, Threshold 1 sits far from the others ($-3.08$), consistent with the near-absence of "strongly disagree" responses and confirming the need for category collapsing. But the baseline model also reveals a second, less expected pattern: Thresholds 2 and 3 are in reversed order ($-0.38$ vs. $-0.56$), with almost entirely overlapping CrIs. The level of the latent variable required for respondents to move from "disagree" to "neutral" is estimated as higher than that required to move from "neutral" to "agree," meaning the model cannot meaningfully distinguish these two transitions.
+
+After collapsing categories 1 and 2, we fitted `merge_rsm` with identical model specifications on the 4-category data. We can use `ranef()` to extract item and person parameter estimates and construct a Wright map (@fig-wright-map-rsm).
+
+```r
+ranef <- ranef(merge_rsm)
+
+ranef$item[, , "Intercept"] %>%
+  as_tibble(rownames = "item") %>%
+  ggplot(aes(x = Estimate, y = item)) +
+  geom_point() +
+  geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5))
+
+ranef$id[, , "Intercept"] %>%
+  as_tibble(rownames = "person") %>%
+  arrange(Estimate) %>%
+  mutate(id = row_number()) %>%
+  ggplot(aes(x = id, y = Estimate)) +
+  geom_pointrange(aes(ymin = Q2.5, ymax = Q97.5))
+```
+
+![Wright map from `merge_rsm`. Left: item difficulty estimates with 95% CrIs. Right: person ability estimates sorted by magnitude.](../figures/fig4_wright_map.png){#fig-wright-map-rsm width="95%"}
+
+The item difficulty map shows a satisfactory distribution of difficulties across the latent continuum, with reasonably sized credible intervals and no abnormally wide estimates. The person ability distribution is approximately normal, though a handful of respondents exhibit very wide credible intervals, likely reflecting the inconsistent response patterns noted earlier. Overall, item-person targeting appears adequate.
+
+The threshold reversal however persists. Thresholds 1 and 2 of the collapsed scale remain in reversed order with heavily overlapping credible intervals, confirming that the anomaly was not attributable to category sparsity alone. The RSM constrains all items to share the same set of thresholds; when items differ substantially in how well they discriminate between respondents, this shared structure is forced into a compromise that can compress or reverse threshold spacing. The persisting reversal therefore points in two directions: the underlying construct may have a more complex dimensionality than the unidimensional model assumes (Step 2), and some items may not discriminate well enough under a constrained equal-discrimination specification (Step 3).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # References
 ::: {#refs}
 :::
 
-\newpage
+
 
 # Model specifications {#apx-models}
 
@@ -170,6 +252,7 @@ P(Y_{pi} = c) = \frac{\exp \sum_{j=1}^{c} \alpha_i(\theta_p + \xi_i - \tau_{i,j}
 $$
 
 Unlike the GRSM, which constrains all items to share the same threshold spacing, the GPCM allows each item to have its own set of threshold parameters. This provides the most flexible parameterisation within the adjacent-category family, but requires estimating substantially more parameters, which can compromise stability with small samples.
+
 ### Graded Response Model (GRM)
 
 The GRM uses the cumulative logit link rather than the adjacent-category logit. In its general form (Samejima, 2016), the GRM allows fully item-specific thresholds. The implementation used in this study is a constrained variant in which threshold spacing is shared across items, with item differences captured through a location parameter $\xi_i$ that shifts all thresholds equally. The probability of responding in category $c$ is defined as:
@@ -182,15 +265,14 @@ where $\eta_{pi} = \theta_p + \xi_i$ is the person-by-item location, $F(x) = \fr
 
 The GRM directly models the cumulative probability $P(Y_{pi} \geq c)$, in contrast to the adjacent-category models which model the odds of each category relative to its neighbour.
 
-\newpage
+
 
 ### Summary of Model Families
 
-\begingroup
 \fontsize{10.5pt}{12.6pt}\selectfont
 
 | Model | Link | Thresholds | Discrimination |
-|:--------------|:--------------|:--------------|:--------------|
+|:---|:---|:---|:---|
 | RSM | Adjacent-category | Shared | Equal ($\alpha = 1$) |
 | GRSM | Adjacent-category | Shared | Item-specific |
 | GPCM | Adjacent-category | Item-specific | Item-specific |
@@ -198,7 +280,7 @@ The GRM directly models the cumulative probability $P(Y_{pi} \geq c)$, in contra
 
 : Summary of ordinal IRT model families used in this study. RSM, GRSM, and GRM share threshold spacing across items; item differences enter only through the location parameter $\xi_i$. GPCM allows fully item-specific thresholds. The generalised forms (GRSM, GPCM, GRM) estimate item-specific discrimination. {#tbl-models tbl-colwidths="[15,25,30,30]"}
 
-\endgroup
+\normalsize
 
 ## Dimensional Structures
 
@@ -244,26 +326,23 @@ $$
 
 This constraint ensures that the specific factors capture only residual variation within each dimension after accounting for the general factor. The distinction from CT-MIRT is structural: the correlated-traits model permits free correlations among dimension-specific traits but includes no general factor, whereas the bi-factor model decomposes variance into a general component shared across all items and orthogonal dimension-specific residuals.
 
-\newpage
 
 ## Prior Distributions
 
 Weakly informative priors are used throughout, following recommendations in Bürkner (2021):
 
-\begingroup
 \fontsize{10.5pt}{12.6pt}\selectfont
 
 | Parameter | Prior | Rationale |
-|:-----------------------|:-----------------------|:-----------------------|
+|:---|:---|:---|
 | Person and item SDs ($\sigma_\theta$, $\sigma_{\text{item}}$) | $\mathcal{N}(0, 3)$ | Half-normal (truncated at 0); allows substantial variation while regularising. |
 | Log-discrimination SD | $\mathcal{N}(0, 1)$ | Covers discrimination values roughly in $[0.14, 7.4]$. |
 | Correlation matrix (CT-MIRT) | $\text{LKJ}(2)$ | Mildly favours smaller correlations; $\eta > 1$ concentrates density near the identity matrix. |
 
 : Prior distributions for all model parameters. {#tbl-priors tbl-colwidths="[35,20,45]"}
 
-\endgroup
+\normalsize
 
-\newpage
 
 # Instrument items {#apx-items}
 
@@ -271,11 +350,10 @@ Teachers were asked to report their endorsement of each statement on a 5-point L
 
 ## Bm: Beliefs About Mathematics (8 Items)
 
-\begingroup
 \fontsize{10.5pt}{12.6pt}\selectfont
 
 | Item | Statement |
-|:-----------------------------------|:-----------------------------------|
+|:---|:---|
 | Bm_1_r | Mathematics is a collection of rules and procedures. |
 | Bm_2_r | Mathematics involves remembering and applying definitions, formulas, mathematical facts and procedures. |
 | Bm_3_r | To do mathematics requires much practice of correct application of routines. |
@@ -287,18 +365,16 @@ Teachers were asked to report their endorsement of each statement on a 5-point L
 
 : Beliefs about mathematics items. {#tbl-item-bm tbl-colwidths="[15,85]"}
 
-*Note.* Items Bm_1_r through Bm_4_r were removed during the workflow due to poor psychometric properties. The final model was fitted on the remaining 20 items.
-\endgroup
+\normalsize
+
+
 
 \newpage
-
 ## Bl: Beliefs About Learners (11 Items)
 
-\begingroup
-\fontsize{10.5pt}{12.6pt}\selectfont
 
 | Item | Statement |
-|:-----------------------------------|:-----------------------------------|
+|:---|:---|
 | Bl_1_r | Students must be able to solve mathematics problems quickly. |
 | Bl_2 | Students must be able to understand why the answer is correct. |
 | Bl_3_r | Students learn mathematics best by attending to the teacher's standard explanations. |
@@ -313,15 +389,14 @@ Teachers were asked to report their endorsement of each statement on a 5-point L
 
 : Beliefs about learners items. {#tbl-item-bl tbl-colwidths="[15,85]"}
 
-\endgroup
+\normalsize
+
 
 ## Bp: Beliefs About Pedagogy (5 Items)
 
-\begingroup
-\fontsize{10.5pt}{12.6pt}\selectfont
 
 | Item | Statement |
-|:-----------------------------------|:-----------------------------------|
+|:---|:---|
 | Bp_1_r | Innovative pedagogy (e.g., project-based learning, flipped classroom) is not worth the time and expense. |
 | Bp_2_r | Innovative pedagogy (e.g., project-based learning, flipped classroom) should only play a minor, supplementary role in the mathematics classroom. |
 | Bp_3 | I'm continuously seeking better ways to teach mathematics. |
@@ -330,5 +405,4 @@ Teachers were asked to report their endorsement of each statement on a 5-point L
 
 : Beliefs about pedagogy items. {#tbl-item-bp tbl-colwidths="[15,85]"}
 
-\endgroup
-
+\normalsize

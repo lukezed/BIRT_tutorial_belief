@@ -72,6 +72,46 @@
 \usepackage[protrusion=true]{microtype}
 
 
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{241,243,245}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.40,0.45,0.13}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\ExtensionTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.28,0.35,0.67}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.46,0.62}{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.07,0.07,0.07}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
 
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
@@ -336,10 +376,7 @@ overview}\label{bayesian-irt-a-brief-overview}
 
 \section{Case study: Data and setup}\label{case-study-data-and-setup}
 
-\subsection{Case Study: Data and
-Setup}\label{case-study-data-and-setup-1}
-
-\subsubsection{Dataset}\label{dataset}
+\subsection{Dataset}\label{dataset}
 
 The case study uses questionnaire data from secondary mathematics
 teachers (\emph{n} = 155) in public schools across three urban districts
@@ -349,16 +386,17 @@ variables were retained for subsequent differential item functioning
 analysis: teacher gender (male/female), school district (1/2/3), and the
 year group taught (7/8/9).
 
-\subsubsection{Instrument}\label{instrument}
+\subsection{Instrument}\label{instrument}
 
 The instrument comprises 24 items measuring the degree to which teachers
 hold inclusive, equity-oriented beliefs about mathematics education, as
 opposed to more traditional or exclusionary orientations. It was adapted
-from the Teacher Education and Development Study in Mathematics (TEDS-M;
-Tatto, 2013) with cultural modifications for the Chinese context (e.g.,
-replacing references to ``hands-on experiences'' with locally
-recognisable pedagogical reforms such as project-based learning). Items
-are organised into three subscales:
+from the Teacher Education and Development Study in Mathematics
+{[}TEDS-M; Tatto (\citeproc{ref-tatto2013teachea}{2013}){]} with
+cultural modifications for the Chinese context (e.g., replacing
+references to ``hands-on experiences'' with locally recognisable
+pedagogical reforms such as project-based learning). Items are organised
+into three subscales:
 
 \begin{itemize}
 \tightlist
@@ -385,10 +423,11 @@ to ``strongly agree.'' The full item list is provided in Appendix B.
 
 The instrument's three-dimensional design, grounded in frameworks
 distinguishing what mathematics is, who can learn it, and how it should
-be taught (Felton-Koestler, 2017), naturally motivates competing
-structural hypotheses for IRT modelling.
+be taught (\citeproc{ref-felton-koestler2017mathem}{Felton-Koestler,
+2017}), naturally motivates competing structural hypotheses for IRT
+modelling.
 
-\subsubsection{Competing structural
+\subsection{Competing structural
 hypotheses}\label{competing-structural-hypotheses}
 
 Given the instrument's multidimensional design, we consider three
@@ -423,40 +462,42 @@ a single continuum of inclusive belief. This implies that teachers'
 orientations toward mathematics, learners, and pedagogy vary in concert,
 so that a single latent trait \(\theta_p\) suffices:
 
-\[
+\begin{equation}\phantomsection\label{eq-uni}{
 \eta_{pi} = \beta_0 + \xi_i + \theta_p
-\]
+}\end{equation}
 
-\emph{Correlated traits.} According to belief cluster theory (Green,
-1971), teachers' beliefs are not monolithic but organised in clusters
-that may develop and function semi-independently. Applied to this
-instrument, the three subscales may represent distinct yet
-interconnected belief clusters, allowing, for instance, a teacher to
-hold formalist views of mathematics while still believing most students
-can succeed. Each person is then characterised by a vector
+\emph{Correlated traits.} According to belief cluster theory
+(\citeproc{ref-green1971activia}{Green, 1971}), teachers' beliefs are
+not monolithic but organised in clusters that may develop and function
+semi-independently. Applied to this instrument, the three subscales may
+represent distinct yet interconnected belief clusters, allowing, for
+instance, a teacher to hold formalist views of mathematics while still
+believing most students can succeed. Each person is then characterised
+by a vector
 \(\boldsymbol{\theta}_p = (\theta_{pM}, \theta_{pL}, \theta_{pP})^\top
 \sim \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma})\) with an unrestricted
 covariance matrix:
 
-\[
+\begin{equation}\phantomsection\label{eq-ct}{
 \eta_{pi} = \beta_0 + \xi_i 
   + \sum_{d \in \{M,L,P\}} \mathbb{I}_{id}\, \theta_{pd}
-\]
+}\end{equation}
 
-\emph{Bi-factor.} Belief system theories (Green, 1971; Rokeach, 1968)
-further propose that beliefs form hierarchical networks in which some
-core beliefs are stable and broadly influential, while others are more
-peripheral and context-dependent. Statistically, this implies a
-bi-factor structure: a general inclusive belief factor captures the
-shared variance across all items, while dimension-specific residual
-factors capture variation not explained by the general factor. A general
-trait \(\theta_p\) is added alongside orthogonal specific factors
-\(\theta_{pd}^{s}\):
+\emph{Bi-factor.} Belief system theories
+(\citeproc{ref-green1971activia}{Green, 1971};
+\citeproc{ref-rokeach1968theorya}{Rokeach, 1968}) further propose that
+beliefs form hierarchical networks in which some core beliefs are stable
+and broadly influential, while others are more peripheral and
+context-dependent. Statistically, this implies a bi-factor structure: a
+general inclusive belief factor captures the shared variance across all
+items, while dimension-specific residual factors capture variation not
+explained by the general factor. A general trait \(\theta_p\) is added
+alongside orthogonal specific factors \(\theta_{pd}^{s}\):
 
-\[
+\begin{equation}\phantomsection\label{eq-bf}{
 \eta_{pi} = \beta_0 + \xi_i + \theta_p 
   + \sum_{d \in \{M,L,P\}} \mathbb{I}_{id}\, \theta_{pd}^{s}
-\]
+}\end{equation}
 
 The orthogonality constraint
 \(\text{Cov}(\theta_p, \theta_{pd}^{s}) = 0\) is imposed
@@ -467,27 +508,24 @@ here.\footnote{It is possible to relax this constraint and estimate
   variance using the same set of item responses. With small samples this
   also raises the risk of overfitting, where the additional covariance
   parameters absorb noise rather than capturing meaningful structure.}
-Its implementation in brms is discussed in Section 5.2. All three
-hypotheses can be combined with any of the ordinal link functions
-described in Appendix A; competing combinations are systematically
-compared in the workflow.
+Competing combinations are systematically compared in the workflow later
+(also see \hyperref[apx-models]{Appendix~A} for modelling details).
 
-\subsubsection{Computational setup}\label{computational-setup}
+\subsection{Computational setup}\label{computational-setup}
 
-All models were fitted in R using the brms package (Bürkner, 2017),
-which interfaces with Stan (Carpenter et al., 2017) for Hamiltonian
-Monte Carlo sampling. Each model used 4 chains with 4,000 iterations per
-chain (2,000 warmup), yielding 8,000 post-warmup draws for inference.
-Weakly informative priors were specified following Bürkner
-(\citeproc{ref-burkner2021bayesi}{2021}) : \(\mathcal{N}(0, 3)\) for
-person and item random effect standard deviations, \(\mathcal{N}(0, 1)\)
-for log-discrimination parameters, and \(\text{LKJ}(2)\) for correlation
-matrices in the correlated-traits models.\footnote{The LKJ prior
-  (Lewandowski, Kurowicka, \& Joe, 2009) is a distribution over
-  correlation matrices. The shape parameter \(\eta\) controls the
-  density: \(\eta = 1\) is uniform over all valid correlation matrices;
-  \(\eta > 1\) increasingly concentrates density near the identity
-  matrix, favouring smaller correlations. We use \(\eta = 2\) as a mild
+All models were fitted in R using the brms package
+(\citeproc{ref-burkner2017brmsb}{Bürkner, 2017}), which interfaces with
+Stan (\citeproc{ref-carpenter2017stana}{Carpenter et al., 2017}) for
+Hamiltonian Monte Carlo sampling. Each model used 4 chains with 4,000
+iterations per chain (2,000 warmup), yielding 8,000 post-warmup draws
+for inference. Weakly informative priors were specified following
+Bürkner (\citeproc{ref-burkner2021bayesi}{2021}): \(\mathcal{N}(0, 3)\)
+for person and item random effect standard deviations,
+\(\mathcal{N}(0, 1)\) for log-discrimination parameters, and
+\(\text{LKJ}(2)\) for correlation matrices in the correlated-traits
+models.\footnote{The LKJ prior
+  (\citeproc{ref-lewandowski2009genera}{Lewandowski et al., 2009}) is a
+  distribution over correlation matrices. We use \(\eta = 2\) as a mild
   regularising choice.} Convergence was assessed by confirming
 \(\hat{R} < 1.01\) for all parameters, adequate bulk and tail effective
 sample sizes, and no persistent divergent transitions. Additional
@@ -495,19 +533,213 @@ sampler settings introduced for complex multidimensional models are
 discussed alongside the relevant workflow steps. Complete code is
 provided in the companion repository.
 
-\newpage
+\section{Applying the workflow}\label{applying-the-workflow}
+
+\subsection{Step 1: Preprocessing sparse response
+categories}\label{step-1-preprocessing-sparse-response-categories}
+
+We begin by inspecting the observed response distributions.
+Figure~\ref{fig-response-dist} shows the item-level frequency
+distributions across the original 5-point scale.
+
+\begin{figure}
+
+\caption{\label{fig-response-dist}Item-level response distributions
+across the original 5-point scale, coloured by subscale dimension.}
+
+\centering{
+
+\includegraphics[width=0.95\linewidth,height=\textheight,keepaspectratio]{../figures/fig3_response_distribution.png}
+
+}
+
+\end{figure}%
+
+A small number of respondents answered only the first few items and left
+all remaining items blank, likely reflecting disengagement. Because IRT
+models use full information likelihood, each response contributes
+independently to estimation regardless of whether the respondent
+completed the full instrument, so these cases were retained without
+special treatment.
+
+More consequential is the sparsity of the lowest response category.
+Category 1 (``strongly disagree'') was very rarely endorsed: twelve of
+24 items received fewer than three responses in this category. When very
+few respondents select a given category, the model lacks sufficient
+information to identify the threshold involving that category. Bayesian
+priors can regularise the estimate to prevent divergence, but the
+resulting posterior will be prior-dominated rather than data-informed.
+This is an information problem that no estimation framework can resolve,
+and it motivates collapsing categories 1 and 2 into a single
+``disagree'' category, reducing the scale from five to four ordered
+levels. The decision is also justified on semantic grounds: both
+categories represent forms of disagreement, whereas merging the two
+middle categories would conflate ``disagree'' and ``neutral,'' which are
+substantively distinct.
+
+Before collapsing, we can first fitted a baseline Rating Scale Model
+(RSM) to the original 5-point data to inspect the threshold structure.
+In \texttt{brms}, the RSM is specified using
+\texttt{brmsfamily("acat",\ "logit")}, where \texttt{acat} denotes the
+adjacent-category parameterisation (modelling the odds of each response
+category relative to its neighbour) and \texttt{logit} specifies the
+logistic link function.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{null\_rsm }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(}
+  \AttributeTok{formula =}\NormalTok{ response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ id),}
+  \AttributeTok{data =}\NormalTok{ data\_1,}
+  \AttributeTok{family =} \FunctionTok{brmsfamily}\NormalTok{(}\StringTok{"acat"}\NormalTok{, }\StringTok{"logit"}\NormalTok{),}
+  \AttributeTok{prior =} \FunctionTok{prior}\NormalTok{(}\FunctionTok{normal}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{3}\NormalTok{), }\AttributeTok{class =} \StringTok{"sd"}\NormalTok{)}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\fontsize{10.5pt}{12.6pt}\selectfont
+
+\begin{table}
+
+{\caption{{Threshold estimates from the baseline RSM fitted to the
+original 5-point response scale.}{\label{tbl-thresh-null}}}
+\vspace{-20pt}}
+
+\begin{longtable}[]{@{}lrr@{}}
+\toprule\noalign{}
+Threshold Transition & Estimate & 95\% CrI \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1: ``strongly disagree'' to ``disagree'' & \(-3.08\) &
+\([-3.57, -2.61]\) \\
+2: ``disagree'' to ``neutral'' & \(-0.38\) & \([-0.86, 0.06]\) \\
+3: ``neutral'' to ``agree'' & \(-0.56\) & \([-1.02, -0.12]\) \\
+4: ``agree'' to ``strongly agree'' & \(2.16\) & \([1.70, 2.62]\) \\
+\end{longtable}
+
+\end{table}
+
+\normalsize
+
+As shown in Table~\ref{tbl-thresh-null}, Threshold 1 sits far from the
+others (\(-3.08\)), consistent with the near-absence of ``strongly
+disagree'' responses and confirming the need for category collapsing.
+But the baseline model also reveals a second, less expected pattern:
+Thresholds 2 and 3 are in reversed order (\(-0.38\) vs.~\(-0.56\)), with
+almost entirely overlapping CrIs. The level of the latent variable
+required for respondents to move from ``disagree'' to ``neutral'' is
+estimated as higher than that required to move from ``neutral'' to
+``agree,'' meaning the model cannot meaningfully distinguish these two
+transitions.
+
+After collapsing categories 1 and 2, we fitted \texttt{merge\_rsm} with
+identical model specifications on the 4-category data. We can use
+\texttt{ranef()} to extract item and person parameter estimates and
+construct a Wright map (Figure~\ref{fig-wright-map-rsm}).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ranef }\OtherTok{\textless{}{-}} \FunctionTok{ranef}\NormalTok{(merge\_rsm)}
+
+\NormalTok{ranef}\SpecialCharTok{$}\NormalTok{item[, , }\StringTok{"Intercept"}\NormalTok{] }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{as\_tibble}\NormalTok{(}\AttributeTok{rownames =} \StringTok{"item"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Estimate, }\AttributeTok{y =}\NormalTok{ item)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_errorbar}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{xmin =}\NormalTok{ Q2}\FloatTok{.5}\NormalTok{, }\AttributeTok{xmax =}\NormalTok{ Q97}\FloatTok{.5}\NormalTok{))}
+
+\NormalTok{ranef}\SpecialCharTok{$}\NormalTok{id[, , }\StringTok{"Intercept"}\NormalTok{] }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{as\_tibble}\NormalTok{(}\AttributeTok{rownames =} \StringTok{"person"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{arrange}\NormalTok{(Estimate) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{id =} \FunctionTok{row\_number}\NormalTok{()) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ id, }\AttributeTok{y =}\NormalTok{ Estimate)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_pointrange}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{ymin =}\NormalTok{ Q2}\FloatTok{.5}\NormalTok{, }\AttributeTok{ymax =}\NormalTok{ Q97}\FloatTok{.5}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}
+
+\caption{\label{fig-wright-map-rsm}Wright map from \texttt{merge\_rsm}.
+Left: item difficulty estimates with 95\% CrIs. Right: person ability
+estimates sorted by magnitude.}
+
+\centering{
+
+\includegraphics[width=0.95\linewidth,height=\textheight,keepaspectratio]{../figures/fig4_wright_map.png}
+
+}
+
+\end{figure}%
+
+The item difficulty map shows a satisfactory distribution of
+difficulties across the latent continuum, with reasonably sized credible
+intervals and no abnormally wide estimates. The person ability
+distribution is approximately normal, though a handful of respondents
+exhibit very wide credible intervals, likely reflecting the inconsistent
+response patterns noted earlier. Overall, item-person targeting appears
+adequate.
+
+The threshold reversal however persists. Thresholds 1 and 2 of the
+collapsed scale remain in reversed order with heavily overlapping
+credible intervals, confirming that the anomaly was not attributable to
+category sparsity alone. The RSM constrains all items to share the same
+set of thresholds; when items differ substantially in how well they
+discriminate between respondents, this shared structure is forced into a
+compromise that can compress or reverse threshold spacing. The
+persisting reversal therefore points in two directions: the underlying
+construct may have a more complex dimensionality than the unidimensional
+model assumes (Step 2), and some items may not discriminate well enough
+under a constrained equal-discrimination specification (Step 3).
 
 \section{References}\label{references}
 
 \phantomsection\label{refs}
 \begin{CSLReferences}{1}{0}
+\bibitem[\citeproctext]{ref-burkner2017brmsb}
+Bürkner, P.-C. (2017). {\textbf{Brms}} : An {\emph{R}} package for
+bayesian multilevel models using {\emph{Stan}}. \emph{Journal of
+Statistical Software}, \emph{80}(1).
+\url{https://doi.org/10.18637/jss.v080.i01}
+
 \bibitem[\citeproctext]{ref-burkner2021bayesi}
 Bürkner, P.-C. (2021). Bayesian item response modeling in {R} with brms
 and {Stan}. \emph{Journal of Statistical Software}, \emph{100}, 1--54.
 
-\end{CSLReferences}
+\bibitem[\citeproctext]{ref-carpenter2017stana}
+Carpenter, B., Gelman, A., Hoffman, M. D., Lee, D., Goodrich, B.,
+Betancourt, M., Brubaker, M., Guo, J., Li, P., \& Riddell, A. (2017).
+{\emph{Stan}} : A probabilistic programming language. \emph{Journal of
+Statistical Software}, \emph{76}(1).
+\url{https://doi.org/10.18637/jss.v076.i01}
 
-\newpage
+\bibitem[\citeproctext]{ref-felton-koestler2017mathem}
+Felton-Koestler, M. D. (2017). Mathematics education as sociopolitical:
+{Prospective} teachers' views of the {What}, {Who}, and {How}.
+\emph{Journal of Mathematics Teacher Education}, \emph{20}(1), 49--74.
+\url{https://doi.org/10.1007/s10857-015-9315-x}
+
+\bibitem[\citeproctext]{ref-green1971activia}
+Green, T. F. (1971). \emph{The activities of teaching}. McGraw-Hill.
+
+\bibitem[\citeproctext]{ref-lewandowski2009genera}
+Lewandowski, D., Kurowicka, D., \& Joe, H. (2009). Generating random
+correlation matrices based on vines and extended onion method.
+\emph{Journal of Multivariate Analysis}, \emph{100}(9), 1989--2001.
+\url{https://doi.org/10.1016/j.jmva.2009.04.008}
+
+\bibitem[\citeproctext]{ref-rokeach1968theorya}
+Rokeach, M. (1968). A theory of organization and change within
+value‐attitude {Systems}. \emph{Journal of Social Issues}, \emph{24}(1),
+13--33. \url{https://doi.org/10.1111/j.1540-4560.1968.tb01466.x}
+
+\bibitem[\citeproctext]{ref-tatto2013teachea}
+Tatto, M. T. (Ed.). (2013). \emph{The {Teacher Education} and
+{Development Study} in {Mathematics} ({TEDS-M}) policy, practice, and
+readiness to teach primary and secondary mathematics in 17 countries:
+Technical report}. International Association for the Evaluation of
+Educational Achievement (IEA).
+
+\end{CSLReferences}
 
 \appendix
 
@@ -567,8 +799,10 @@ Unlike the GRSM, which constrains all items to share the same threshold
 spacing, the GPCM allows each item to have its own set of threshold
 parameters. This provides the most flexible parameterisation within the
 adjacent-category family, but requires estimating substantially more
-parameters, which can compromise stability with small samples. \#\#\#
-Graded Response Model (GRM)
+parameters, which can compromise stability with small samples.
+
+\subsubsection{Graded Response Model
+(GRM)}\label{graded-response-model-grm}
 
 The GRM uses the cumulative logit link rather than the adjacent-category
 logit. In its general form (Samejima, 2016), the GRM allows fully
@@ -595,12 +829,9 @@ The GRM directly models the cumulative probability \(P(Y_{pi} \geq c)\),
 in contrast to the adjacent-category models which model the odds of each
 category relative to its neighbour.
 
-\newpage
-
 \subsubsection{Summary of Model
 Families}\label{summary-of-model-families}
 
-\begingroup
 \fontsize{10.5pt}{12.6pt}\selectfont
 
 \begin{table}
@@ -639,7 +870,7 @@ GRM & Cumulative & Shared (equal spacing) & Item-specific \\
 
 \end{table}
 
-\endgroup
+\normalsize
 
 \subsection{Dimensional Structures}\label{dimensional-structures}
 
@@ -706,14 +937,11 @@ no general factor, whereas the bi-factor model decomposes variance into
 a general component shared across all items and orthogonal
 dimension-specific residuals.
 
-\newpage
-
 \subsection{Prior Distributions}\label{prior-distributions}
 
 Weakly informative priors are used throughout, following recommendations
 in Bürkner (2021):
 
-\begingroup
 \fontsize{10.5pt}{12.6pt}\selectfont
 
 \begin{table}
@@ -750,9 +978,7 @@ identity matrix. \\
 
 \end{table}
 
-\endgroup
-
-\newpage
+\normalsize
 
 \section{Instrument items}\label{apx-items}
 
@@ -765,7 +991,6 @@ stronger endorsement of inclusive and equity-oriented beliefs.
 \subsection{Bm: Beliefs About Mathematics (8
 Items)}\label{bm-beliefs-about-mathematics-8-items}
 
-\begingroup
 \fontsize{10.5pt}{12.6pt}\selectfont
 
 \begin{table}
@@ -802,17 +1027,12 @@ oneself. \\
 
 \end{table}
 
-\emph{Note.} Items Bm\_1\_r through Bm\_4\_r were removed during the
-workflow due to poor psychometric properties. The final model was fitted
-on the remaining 20 items. \endgroup
+\normalsize
 
 \newpage
 
 \subsection{Bl: Beliefs About Learners (11
 Items)}\label{bl-beliefs-about-learners-11-items}
-
-\begingroup
-\fontsize{10.5pt}{12.6pt}\selectfont
 
 \begin{table}
 
@@ -856,13 +1076,10 @@ with the learning experience of other students. \\
 
 \end{table}
 
-\endgroup
+\normalsize
 
 \subsection{Bp: Beliefs About Pedagogy (5
 Items)}\label{bp-beliefs-about-pedagogy-5-items}
-
-\begingroup
-\fontsize{10.5pt}{12.6pt}\selectfont
 
 \begin{table}
 
@@ -896,7 +1113,7 @@ classroom. \\
 
 \end{table}
 
-\endgroup
+\normalsize
 
 
 
