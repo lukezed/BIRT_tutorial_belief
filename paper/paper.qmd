@@ -159,7 +159,7 @@ null_rsm <- brm(
 | 3: "neutral" to "agree" | $-0.56$ | $[-1.02, -0.12]$ |
 | 4: "agree" to "strongly agree" | $2.16$ | $[1.70, 2.62]$ |
 
-: Threshold estimates from the baseline RSM fitted to the original 5-point response scale. {#tbl-thresh-null tbl-colwidths="false"}
+: Threshold estimates from `null_rsm`. {#tbl-thresh-null tbl-colwidths="false"}
 
 \normalsize
 
@@ -188,7 +188,81 @@ ranef$id[, , "Intercept"] %>%
 
 The item difficulty map shows a satisfactory distribution of difficulties across the latent continuum, with reasonably sized credible intervals and no abnormally wide estimates. The person ability distribution is approximately normal, though a handful of respondents exhibit very wide credible intervals, likely reflecting the inconsistent response patterns noted earlier. Overall, item-person targeting appears adequate.
 
-The threshold reversal however persists. Thresholds 1 and 2 of the collapsed scale remain in reversed order with heavily overlapping credible intervals, confirming that the anomaly was not attributable to category sparsity alone. The RSM constrains all items to share the same set of thresholds; when items differ substantially in how well they discriminate between respondents, this shared structure is forced into a compromise that can compress or reverse threshold spacing. The persisting reversal therefore points in two directions: the underlying construct may have a more complex dimensionality than the unidimensional model assumes (Step 2), and some items may not discriminate well enough under a constrained equal-discrimination specification (Step 3).
+The threshold reversal however persists. Thresholds 1 ($-0.40$, CrI $[-0.91, 0.1]$) and 2 ($-0.56$, CrI $[-1.06, -0.06]$) of `merge_rsm` remain in reversed order with heavily overlapping credible intervals, confirming that the anomaly was not attributable to category sparsity alone. It is worth recalling that the RSM imposes several strong assumptions simultaneously: it assumes a single underlying construct, constrains all items to share the same set of thresholds, and fixes discrimination to be equal across items. When any of these assumptions is violated in data structure, the shared threshold structure is forced into a compromise that can compress or reverse threshold spacing. The persisting reversal may therefore reflect a more complex dimensionality than the unidimensional model assumes, or it may indicate that certain items discriminate poorly under a constrained equal-discrimination specification, or both. We address these possibilities in turn: Step 2 examines whether a multidimensional structure better accounts for the data, and Step 3 investigates whether freeing item-level discrimination parameters resolves the remaining threshold disorder.
+
+## Step 2: Comparing dimensional structures
+The belief instrument was designed with three subscales: beliefs about mathematics, beliefs about learners, and beliefs about pedagogy. The unidimensional RSM fitted in Step 1 treats all 24 items as indicators of a single construct, but the persisting threshold reversal suggests that this may be an oversimplification. If items from different subscales tap into related but distinct aspects of teachers' equity beliefs, forcing them onto a single continuum could distort the shared threshold structure. We therefore compare three competing dimensional specifications, all fitted to the same collapsed 4-category data under the RSM.
+ 
+The first is the unidimensional model already in hand (`merge_rsm`). The second is a correlated-traits model, which replaces the single person ability term with three dimension-specific traits that are allowed to correlate freely. In `brms`, this is specified by replacing `(1 | id)` with `(0 + dim_m + dim_l + dim_p | id)`, where `dim_m`, `dim_l`, and `dim_p` are binary indicators assigning each item to its subscale. The single-bar notation `|` estimates an unrestricted covariance matrix across the three traits. Because correlated random effects introduce additional geometry that the sampler must navigate, we increase `adapt_delta` and `max_treedepth` beyond their defaults, and add an LKJ(2) prior on the correlation matrix to mildly regularise toward lower correlations.
+ 
+```r
+ct_rsm <- brm(
+  formula = response ~ 1 + (1 | item) +
+    (0 + dim_m + dim_l + dim_p | id),
+  data = data_2,                        # collapsed 4-category data
+  family = brmsfamily("acat", "logit"),
+  prior = prior(normal(0, 3), class = "sd") +
+          prior(lkj(2), class = "cor"),
+  control = list(adapt_delta = 0.99, max_treedepth = 15)
+)
+```
+ 
+The third is a bi-factor model, which adds a general factor shared across all items alongside dimension-specific residual factors. A critical implementation detail here is the orthogonality constraint between the general and specific factors. In `brms`, the double-bar notation `||` suppresses the estimation of correlations between random effects. By specifying each factor in a separate `||` term, the general factor and the three specific factors are treated as independent.
+ 
+```r
+bf_rsm <- brm(
+  formula = response ~ 1 + (1 | item) +
+    (1 || id) +                        
+    (0 + dim_m || id) +               
+    (0 + dim_l || id) +           
+    (0 + dim_p || id),               
+  data = data_2,
+  family = brmsfamily("acat", "logit"),
+  prior = prior(normal(0, 3), class = "sd"),
+  control = list(adapt_delta = 0.99, max_treedepth = 15)
+)
+```
+ 
+For three models fitted to the same response variable and the same dataset, LOO-CV provides a valid basis for comparison. In `brms`, this is achieved via `loo_compare()`. @tbl-loo-dim shows that both multidimensional models substantially outperform the unidimensional RSM ($\Delta$ELPD = $-69.0$, SE = $13.8$), confirming that treating the three subscales as a single latent trait loses meaningful information about the data structure. The correlated-traits and bi-factor models, however, are not distinguishable from each other at this stage ($\Delta$ELPD = $-0.2$, SE = $2.0$), and both are retained as candidate specifications going forward.
+ 
+| Model | ELPD difference | SE |
+|:---|---:|---:|
+| `bf_rsm` (bi-factor) | $0.0$ | |
+| `ct_rsm` (correlated-traits) | $-0.2$ | $2.0$ |
+| `merge_rsm` (unidimensional) | $-69.0$ | $13.8$ |
+ 
+: LOO-CV comparison of dimensional structures. Models are ordered by ELPD; differences are relative to the best-fitting model. {#tbl-loo-dim}
+ 
+ 
+| Threshold Transition | `bf_rsm` (Est. [95% CrI]) | `ct_rsm` (Est. [95% CrI]) |
+|:---|:---|:---|
+| 1: "disagree" to "neutral" | $-0.55 \ [-1.10, 0.01]$ | $-0.54 \ [-1.11, 0.05]$ |
+| 2: "neutral" to "agree" | $-0.55 \ [-1.10, 0.01]$ | $-0.54 \ [-1.11, 0.04]$ |
+| 3: "agree" to "strongly agree" | $2.44 \ [1.88, 3.00]$ | $2.46 \ [1.89, 3.04]$ |
+ 
+: Threshold estimates from the multidimensional RSMs. {#tbl-thresh-dim tbl-colwidths="false"}
+ 
+The multidimensional models do partially improve the threshold structure. @tbl-thresh-dim shows the threshold estimates from both models. The reversal observed in Step 1 is gone, but the first two thresholds remain almost identical with fully overlapping credible intervals under both models, and the model still cannot distinguish the "disagree" to "neutral" and "neutral" to "agree" transitions. Further collapsing these two categories is not a viable solution: "disagree" and "neutral" are semantically distinct responses, and both categories have sufficient observations across items, so merging them would sacrifice meaningful variation in the data without a substantive justification. Accounting for dimensionality has therefore improved but not resolved the threshold anomaly.
+
+
+
+## Step 3: Freeing discrimination parameters
+ 
+If we assume that the data quality is reliable, that teachers responded thoughtfully and were able to distinguish between adjacent response categories in a meaningful way, then a reasonable concern is that the model itself imposes assumptions that are too restrictive for the data at hand. For the RSM, a particularly strong assumption is that all items share the same discrimination, fixed at $\alpha = 1$. This becomes problematic when certain items in the instrument exhibit extreme response distributions. Consider Bm_2_r ("Mathematics involves remembering and applying definitions, formulas, mathematical facts and procedures"): nearly all respondents endorsed this item regardless of where they fall on the latent continuum, meaning it contributes very little information about individual differences. When poor items are forced to $\alpha = 1$, the model must adjust the shared threshold parameters to accommodate their universally high endorsement rates. This adjustment compresses the spacing between adjacent thresholds across all items, weakening the model's ability to distinguish substantive transitions in the response scale [@embretson2013itema].
+ 
+To relax this constraint, we only need to add one line to the model specification: `disc ~ 1 + (1 | item)`, which estimates a log-discrimination intercept for each item. The resulting model is a Generalised Rating Scale Model (GRSM). 
+
+We fitted both correlated-traits and bi-factor versions (`ct_grsm` and `bf_grsm`), and did LOO-CV comparison across all four models which confirms that the improvement is substantial. For example, `ct_rsm` falls $-141.0$ ELPD (SE = $22.4$) below `ct_grsm`, a difference of approximately seven standard errors.
+
+More importantly for our ongoing diagnostic concern, the threshold anomaly is now resolved. Under `ct_grsm`, Thresholds 1 and 2 are estimated at $-0.35$ and $0.16$, in the correct monotonic order and with separated credible intervals. The model can now meaningfully distinguish the "disagree" to "neutral" and "neutral" to "agree" transitions.
+ 
+@fig-wright-grsm shows the difficulty and discrimination estimates for both `ct_grsm` (top row) and `bf_grsm` (bottom row).
+ 
+![Item difficulty (left) and discrimination (right) estimates from the `ct_grsm` (top) and `bf_grsm` (bottom). Discrimination values are shown on the exponentiated scale ($e^\alpha$). The dashed line at 0.5 marks a conventional threshold below which items are considered poor discriminators.](../figures/fig5_model_comparison.png){#fig-wright-grsm width="95%"}
+ 
+The discrimination panels unsurprisingly reveal substantially different discrimination values across items, confirming that the equal-discrimination assumption was inappropriate. Most items cluster in a reasonable range, but four items stand out: Bm_1_r, Bm_2_r, Bm_3_r, and Bm_4_r. These four items all belong to the "beliefs about mathematics" subscale and share the same reverse-coded formalist orientation (e.g., "Mathematics is a collection of rules and procedures"). Their discrimination estimates fall well below the conventional $\alpha = 0.5$ threshold for 'poor' items [@embretson2013itema],This indicates that item responses are virtually independent of the measured latent trait: a respondent's location on the latent continuum exerts little to no influence on their probability of selecting a given category. Their difficulty estimates are simultaneously problematic with very wide CrIs, meaning they are poorly identified by the data and nearly all respondents find it easy to endorse the exclusive end. While this problematic pattern was invisible under the RSM. Because the equal-discrimination assumption the poor measurement properties were diluted across the shared parameter structure rather than localised to specific items.
+
+## Item removal and 
 
 
 
@@ -202,13 +276,7 @@ The threshold reversal however persists. Thresholds 1 and 2 of the collapsed sca
 
 
 
-
-
-
-
-
-
-
+\newpage
 
 
 # References

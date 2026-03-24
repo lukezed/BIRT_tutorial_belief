@@ -600,8 +600,8 @@ logistic link function.
 
 \begin{table}
 
-{\caption{{Threshold estimates from the baseline RSM fitted to the
-original 5-point response scale.}{\label{tbl-thresh-null}}}
+{\caption{{Threshold estimates from
+\texttt{null\_rsm}.}{\label{tbl-thresh-null}}}
 \vspace{-20pt}}
 
 \begin{longtable}[]{@{}lrr@{}}
@@ -679,17 +679,249 @@ exhibit very wide credible intervals, likely reflecting the inconsistent
 response patterns noted earlier. Overall, item-person targeting appears
 adequate.
 
-The threshold reversal however persists. Thresholds 1 and 2 of the
-collapsed scale remain in reversed order with heavily overlapping
+The threshold reversal however persists. Thresholds 1 (\(-0.40\), CrI
+\([-0.91, 0.1]\)) and 2 (\(-0.56\), CrI \([-1.06, -0.06]\)) of
+\texttt{merge\_rsm} remain in reversed order with heavily overlapping
 credible intervals, confirming that the anomaly was not attributable to
-category sparsity alone. The RSM constrains all items to share the same
-set of thresholds; when items differ substantially in how well they
-discriminate between respondents, this shared structure is forced into a
-compromise that can compress or reverse threshold spacing. The
-persisting reversal therefore points in two directions: the underlying
-construct may have a more complex dimensionality than the unidimensional
-model assumes (Step 2), and some items may not discriminate well enough
-under a constrained equal-discrimination specification (Step 3).
+category sparsity alone. It is worth recalling that the RSM imposes
+several strong assumptions simultaneously: it assumes a single
+underlying construct, constrains all items to share the same set of
+thresholds, and fixes discrimination to be equal across items. When any
+of these assumptions is violated in data structure, the shared threshold
+structure is forced into a compromise that can compress or reverse
+threshold spacing. The persisting reversal may therefore reflect a more
+complex dimensionality than the unidimensional model assumes, or it may
+indicate that certain items discriminate poorly under a constrained
+equal-discrimination specification, or both. We address these
+possibilities in turn: Step 2 examines whether a multidimensional
+structure better accounts for the data, and Step 3 investigates whether
+freeing item-level discrimination parameters resolves the remaining
+threshold disorder.
+
+\subsection{Step 2: Comparing dimensional
+structures}\label{step-2-comparing-dimensional-structures}
+
+The belief instrument was designed with three subscales: beliefs about
+mathematics, beliefs about learners, and beliefs about pedagogy. The
+unidimensional RSM fitted in Step 1 treats all 24 items as indicators of
+a single construct, but the persisting threshold reversal suggests that
+this may be an oversimplification. If items from different subscales tap
+into related but distinct aspects of teachers' equity beliefs, forcing
+them onto a single continuum could distort the shared threshold
+structure. We therefore compare three competing dimensional
+specifications, all fitted to the same collapsed 4-category data under
+the RSM.
+
+The first is the unidimensional model already in hand
+(\texttt{merge\_rsm}). The second is a correlated-traits model, which
+replaces the single person ability term with three dimension-specific
+traits that are allowed to correlate freely. In \texttt{brms}, this is
+specified by replacing \texttt{(1\ \textbar{}\ id)} with
+\texttt{(0\ +\ dim\_m\ +\ dim\_l\ +\ dim\_p\ \textbar{}\ id)}, where
+\texttt{dim\_m}, \texttt{dim\_l}, and \texttt{dim\_p} are binary
+indicators assigning each item to its subscale. The single-bar notation
+\texttt{\textbar{}} estimates an unrestricted covariance matrix across
+the three traits. Because correlated random effects introduce additional
+geometry that the sampler must navigate, we increase
+\texttt{adapt\_delta} and \texttt{max\_treedepth} beyond their defaults,
+and add an LKJ(2) prior on the correlation matrix to mildly regularise
+toward lower correlations.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ct\_rsm }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(}
+  \AttributeTok{formula =}\NormalTok{ response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}
+\NormalTok{    (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_m }\SpecialCharTok{+}\NormalTok{ dim\_l }\SpecialCharTok{+}\NormalTok{ dim\_p }\SpecialCharTok{|}\NormalTok{ id),}
+  \AttributeTok{data =}\NormalTok{ data\_2,                        }\CommentTok{\# collapsed 4{-}category data}
+  \AttributeTok{family =} \FunctionTok{brmsfamily}\NormalTok{(}\StringTok{"acat"}\NormalTok{, }\StringTok{"logit"}\NormalTok{),}
+  \AttributeTok{prior =} \FunctionTok{prior}\NormalTok{(}\FunctionTok{normal}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{3}\NormalTok{), }\AttributeTok{class =} \StringTok{"sd"}\NormalTok{) }\SpecialCharTok{+}
+          \FunctionTok{prior}\NormalTok{(}\FunctionTok{lkj}\NormalTok{(}\DecValTok{2}\NormalTok{), }\AttributeTok{class =} \StringTok{"cor"}\NormalTok{),}
+  \AttributeTok{control =} \FunctionTok{list}\NormalTok{(}\AttributeTok{adapt\_delta =} \FloatTok{0.99}\NormalTok{, }\AttributeTok{max\_treedepth =} \DecValTok{15}\NormalTok{)}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The third is a bi-factor model, which adds a general factor shared
+across all items alongside dimension-specific residual factors. A
+critical implementation detail here is the orthogonality constraint
+between the general and specific factors. In \texttt{brms}, the
+double-bar notation \texttt{\textbar{}\textbar{}} suppresses the
+estimation of correlations between random effects. By specifying each
+factor in a separate \texttt{\textbar{}\textbar{}} term, the general
+factor and the three specific factors are treated as independent.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{bf\_rsm }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(}
+  \AttributeTok{formula =}\NormalTok{ response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}
+\NormalTok{    (}\DecValTok{1} \SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}                        
+\NormalTok{    (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_m }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}               
+\NormalTok{    (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_l }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}           
+\NormalTok{    (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_p }\SpecialCharTok{||}\NormalTok{ id),               }
+  \AttributeTok{data =}\NormalTok{ data\_2,}
+  \AttributeTok{family =} \FunctionTok{brmsfamily}\NormalTok{(}\StringTok{"acat"}\NormalTok{, }\StringTok{"logit"}\NormalTok{),}
+  \AttributeTok{prior =} \FunctionTok{prior}\NormalTok{(}\FunctionTok{normal}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{3}\NormalTok{), }\AttributeTok{class =} \StringTok{"sd"}\NormalTok{),}
+  \AttributeTok{control =} \FunctionTok{list}\NormalTok{(}\AttributeTok{adapt\_delta =} \FloatTok{0.99}\NormalTok{, }\AttributeTok{max\_treedepth =} \DecValTok{15}\NormalTok{)}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+For three models fitted to the same response variable and the same
+dataset, LOO-CV provides a valid basis for comparison. In \texttt{brms},
+this is achieved via \texttt{loo\_compare()}. Table~\ref{tbl-loo-dim}
+shows that both multidimensional models substantially outperform the
+unidimensional RSM (\(\Delta\)ELPD = \(-69.0\), SE = \(13.8\)),
+confirming that treating the three subscales as a single latent trait
+loses meaningful information about the data structure. The
+correlated-traits and bi-factor models, however, are not distinguishable
+from each other at this stage (\(\Delta\)ELPD = \(-0.2\), SE = \(2.0\)),
+and both are retained as candidate specifications going forward.
+
+\begin{table}
+
+{\caption{{LOO-CV comparison of dimensional structures. Models are
+ordered by ELPD; differences are relative to the best-fitting
+model.}{\label{tbl-loo-dim}}}
+\vspace{-20pt}}
+
+\begin{longtable}[]{@{}lrr@{}}
+\toprule\noalign{}
+Model & ELPD difference & SE \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{bf\_rsm} (bi-factor) & \(0.0\) & \\
+\texttt{ct\_rsm} (correlated-traits) & \(-0.2\) & \(2.0\) \\
+\texttt{merge\_rsm} (unidimensional) & \(-69.0\) & \(13.8\) \\
+\end{longtable}
+
+\end{table}
+
+\begin{table}
+
+{\caption{{Threshold estimates from the multidimensional
+RSMs.}{\label{tbl-thresh-dim}}}
+\vspace{-20pt}}
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Threshold Transition & \texttt{bf\_rsm} (Est. {[}95\% CrI{]}) &
+\texttt{ct\_rsm} (Est. {[}95\% CrI{]}) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1: ``disagree'' to ``neutral'' & \(-0.55 \ [-1.10, 0.01]\) &
+\(-0.54 \ [-1.11, 0.05]\) \\
+2: ``neutral'' to ``agree'' & \(-0.55 \ [-1.10, 0.01]\) &
+\(-0.54 \ [-1.11, 0.04]\) \\
+3: ``agree'' to ``strongly agree'' & \(2.44 \ [1.88, 3.00]\) &
+\(2.46 \ [1.89, 3.04]\) \\
+\end{longtable}
+
+\end{table}
+
+The multidimensional models do partially improve the threshold
+structure. Table~\ref{tbl-thresh-dim} shows the threshold estimates from
+both models. The reversal observed in Step 1 is gone, but the first two
+thresholds remain almost identical with fully overlapping credible
+intervals under both models, and the model still cannot distinguish the
+``disagree'' to ``neutral'' and ``neutral'' to ``agree'' transitions.
+Further collapsing these two categories is not a viable solution:
+``disagree'' and ``neutral'' are semantically distinct responses, and
+both categories have sufficient observations across items, so merging
+them would sacrifice meaningful variation in the data without a
+substantive justification. Accounting for dimensionality has therefore
+improved but not resolved the threshold anomaly.
+
+\subsection{Step 3: Freeing discrimination
+parameters}\label{step-3-freeing-discrimination-parameters}
+
+If we assume that the data quality is reliable, that teachers responded
+thoughtfully and were able to distinguish between adjacent response
+categories in a meaningful way, then a reasonable concern is that the
+model itself imposes assumptions that are too restrictive for the data
+at hand. For the RSM, a particularly strong assumption is that all items
+share the same discrimination, fixed at \(\alpha = 1\). This becomes
+problematic when certain items in the instrument exhibit extreme
+response distributions. Consider Bm\_2\_r (``Mathematics involves
+remembering and applying definitions, formulas, mathematical facts and
+procedures''): nearly all respondents endorsed this item regardless of
+where they fall on the latent continuum, meaning it contributes very
+little information about individual differences. When poor items are
+forced to \(\alpha = 1\), the model must adjust the shared threshold
+parameters to accommodate their universally high endorsement rates. This
+adjustment compresses the spacing between adjacent thresholds across all
+items, weakening the model's ability to distinguish substantive
+transitions in the response scale
+(\citeproc{ref-embretson2013itema}{Embretson \& Reise, 2013}).
+
+To relax this constraint, we only need to add one line to the model
+specification:
+\texttt{disc\ \textasciitilde{}\ 1\ +\ (1\ \textbar{}\ item)}, which
+estimates a log-discrimination intercept for each item. The resulting
+model is a Generalised Rating Scale Model (GRSM).
+
+We fitted both correlated-traits and bi-factor versions
+(\texttt{ct\_grsm} and \texttt{bf\_grsm}), and did LOO-CV comparison
+across all four models which confirms that the improvement is
+substantial. For example, \texttt{ct\_rsm} falls \(-141.0\) ELPD (SE =
+\(22.4\)) below \texttt{ct\_grsm}, a difference of approximately seven
+standard errors.
+
+More importantly for our ongoing diagnostic concern, the threshold
+anomaly is now resolved. Under \texttt{ct\_grsm}, Thresholds 1 and 2 are
+estimated at \(-0.35\) and \(0.16\), in the correct monotonic order and
+with separated credible intervals. The model can now meaningfully
+distinguish the ``disagree'' to ``neutral'' and ``neutral'' to ``agree''
+transitions.
+
+Figure~\ref{fig-wright-grsm} shows the difficulty and discrimination
+estimates for both \texttt{ct\_grsm} (top row) and \texttt{bf\_grsm}
+(bottom row).
+
+\begin{figure}
+
+\caption{\label{fig-wright-grsm}Item difficulty (left) and
+discrimination (right) estimates from the \texttt{ct\_grsm} (top) and
+\texttt{bf\_grsm} (bottom). Discrimination values are shown on the
+exponentiated scale (\(e^\alpha\)). The dashed line at 0.5 marks a
+conventional threshold below which items are considered poor
+discriminators.}
+
+\centering{
+
+\includegraphics[width=0.95\linewidth,height=\textheight,keepaspectratio]{../figures/fig5_model_comparison.png}
+
+}
+
+\end{figure}%
+
+The discrimination panels unsurprisingly reveal substantially different
+discrimination values across items, confirming that the
+equal-discrimination assumption was inappropriate. Most items cluster in
+a reasonable range, but four items stand out: Bm\_1\_r, Bm\_2\_r,
+Bm\_3\_r, and Bm\_4\_r. These four items all belong to the ``beliefs
+about mathematics'' subscale and share the same reverse-coded formalist
+orientation (e.g., ``Mathematics is a collection of rules and
+procedures''). Their discrimination estimates fall well below the
+conventional \(\alpha = 0.5\) threshold for `poor' items
+(\citeproc{ref-embretson2013itema}{Embretson \& Reise, 2013}),This
+indicates that item responses are virtually independent of the measured
+latent trait: a respondent's location on the latent continuum exerts
+little to no influence on their probability of selecting a given
+category. Their difficulty estimates are simultaneously problematic with
+very wide CrIs, meaning they are poorly identified by the data and
+nearly all respondents find it easy to endorse the exclusive end. While
+this problematic pattern was invisible under the RSM. Because the
+equal-discrimination assumption the poor measurement properties were
+diluted across the shared parameter structure rather than localised to
+specific items.
+
+\subsection{Item removal and}\label{item-removal-and}
+
+\newpage
 
 \section{References}\label{references}
 
@@ -711,6 +943,11 @@ Betancourt, M., Brubaker, M., Guo, J., Li, P., \& Riddell, A. (2017).
 {\emph{Stan}} : A probabilistic programming language. \emph{Journal of
 Statistical Software}, \emph{76}(1).
 \url{https://doi.org/10.18637/jss.v076.i01}
+
+\bibitem[\citeproctext]{ref-embretson2013itema}
+Embretson, S. E., \& Reise, S. P. (2013). \emph{Item response theory for
+psychologists}. Psychology Press.
+\url{https://doi.org/10.4324/9781410605269}
 
 \bibitem[\citeproctext]{ref-felton-koestler2017mathem}
 Felton-Koestler, M. D. (2017). Mathematics education as sociopolitical:
