@@ -252,7 +252,7 @@ If we assume that the data quality is reliable, that teachers responded thoughtf
  
 To relax this constraint, we only need to add one line to the model specification: `disc ~ 1 + (1 | item)`, which estimates a log-discrimination intercept for each item. The resulting model is a Generalised Rating Scale Model (GRSM). 
 
-We fitted both correlated-traits and bi-factor versions (`ct_grsm` and `bf_grsm`), and did LOO-CV comparison across all four models which confirms that the improvement is substantial. For example, `ct_rsm` falls $-141.0$ ELPD (SE = $22.4$) below `ct_grsm`, a difference of approximately seven standard errors.
+We fitted both correlated-traits and bi-factor versions (`ct_grsm` and `bf_grsm`), and did LOO-CV comparison across all four models which confirms that the improvement is substantial. For example, `ct_rsm` falls $-141.0$ ELPD (SE = $22.4$) below `ct_grsm`, a difference of more than six standard errors.
 
 More importantly for our ongoing diagnostic concern, the threshold anomaly is now resolved. Under `ct_grsm`, Thresholds 1 and 2 are estimated at $-0.35$ and $0.16$, in the correct monotonic order and with separated credible intervals. The model can now meaningfully distinguish the "disagree" to "neutral" and "neutral" to "agree" transitions.
  
