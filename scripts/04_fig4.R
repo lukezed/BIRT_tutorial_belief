@@ -73,7 +73,7 @@ ggsave(
   filename = "figures/fig4_wright_map.png", 
   plot = fig_4, 
   width = 6.5, 
-  height = 4, 
+  height = 3.5, 
   dpi = 600, 
   bg = "white"
 )

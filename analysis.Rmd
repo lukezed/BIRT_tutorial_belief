@@ -232,9 +232,7 @@ ct_rsm <- add_criterion(
 saveRDS(ct_rsm, "models/ct_rsm.rds")
 ```
 
-```{r}
-summary (ct_rsm)
-```
+
 
 ## Fitting the Bi-factor Model (BF-MIRT)
 
@@ -262,6 +260,11 @@ saveRDS(bf_rsm, "models/bf_rsm.rds")
 ```
 
 
+
+```{r}
+summary (ct_rsm)
+summary (bf_rsm)
+```
 ## Dimensionality comparison
 
 ```{r}
@@ -407,7 +410,7 @@ dimensional structures (CT and BF), yielding six models:
 # Formula:  response ~ 1 + (cs(1) | item) + ...
 #           cs(1) allows thresholds to vary by item
 
-
+options(future.globals.maxSize = 8 * 1024^3)
 # --- 1. GRSM  ---
 
 ct_grsm_20 <- brm(
@@ -416,6 +419,7 @@ ct_grsm_20 <- brm(
   family = brmsfamily("acat", "logit"),
   prior = priors_ct_2pl,
   backend = "cmdstanr",
+  save_pars = save_pars(all = TRUE),
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/ct_grsm_20"
@@ -429,6 +433,7 @@ bf_grsm_20 <- brm(
   family = brmsfamily("acat", "logit"),
   prior = priors_bf_2pl,
   backend = "cmdstanr",
+  save_pars = save_pars(all = TRUE),
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/bf_grsm_20"
@@ -445,6 +450,7 @@ ct_grm_20 <- brm(
   family = brmsfamily("cumulative", "logit"),
   prior = priors_ct_2pl,
   backend = "cmdstanr",
+  save_pars = save_pars(all = TRUE),
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/ct_grm_20"
@@ -458,6 +464,7 @@ bf_grm_20 <- brm(
   family = brmsfamily("cumulative", "logit"),
   prior = priors_bf_2pl,
   backend = "cmdstanr",
+  save_pars = save_pars(all = TRUE),
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/bf_grm_20"
@@ -484,6 +491,7 @@ ct_gpcm_20 <- brm(
   family = brmsfamily("acat", "logit"),
   prior = priors_ct_2pl,
   backend = "cmdstanr",
+  save_pars = save_pars(all = TRUE),
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/ct_gpcm_20"
@@ -497,6 +505,7 @@ bf_gpcm_20 <- brm(
   family = brmsfamily("acat", "logit"),
   prior = priors_bf_2pl,
   backend = "cmdstanr",
+  save_pars = save_pars(all = TRUE),
   chains = 4, cores = 4, iter = 4000, warmup = 2000, seed = 1234,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   file = "models/bf_gpcm_20"
@@ -504,20 +513,7 @@ bf_gpcm_20 <- brm(
 bf_gpcm_20 <- add_criterion(bf_gpcm_20, "loo", overwrite = TRUE)
 saveRDS(bf_gpcm_20, "models/bf_gpcm_20.rds")
 ```
-## Model comparison: six-model LOO
-All six models share the same dataset (data_3, 20 items) and the same 
-4-category response variable, making LOO-CV comparison valid.
 
-```{r}
-# Final 6-Model Comparison on Data 3
-loo_compare(
-  ct_grsm_new, bf_grsm_new, 
-  ct_grm_new,  bf_grm_new,
-  ct_gpcm_new,  bf_gpcm_new,
-  criterion = "loo"
-)
-
-```
 ## Inspecting individual LOO diagnostics
 
 Individual LOO summaries reveal Pareto-k diagnostics for each model. 
@@ -534,10 +530,15 @@ loo(ct_gpcm_20)
 loo(bf_gpcm_20)
 ```
 
-## Model weights
-
 
 ```{r}
+loo_compare(
+  ct_grsm_20, bf_grsm_20, 
+  ct_grm_20,  bf_grm_20,
+  ct_gpcm_20, bf_gpcm_20
+)
+
+
 # Stacking weights across all six models
 model_weights(
   ct_grsm_20, bf_grsm_20,
@@ -545,12 +546,37 @@ model_weights(
   ct_gpcm_20, bf_gpcm_20
 )
 
-# Direct comparison within the GRM family
-model_weights(ct_grm_20, bf_grm_20)
 
 ```
 
-# Final model Wright map
+
+## Clean loo
+
+```{r}
+
+options(future.globals.maxSize = 8 * 1024^3) 
+
+# CT-GRM
+loo_ct_grm_20 <- loo(ct_grm_20, moment_match = TRUE, reloo = TRUE)
+saveRDS(loo_ct_grm_20, "models/loo/loo_ct_grm_20.rds")
+
+# 4. BF-GRM
+loo_bf_grm_20 <- loo(bf_grm_20, moment_match = TRUE)
+saveRDS(loo_bf_grm_20, "models/loo/loo_bf_grm_20.rds")
+
+
+```
+## Clean compare
+
+```{r}
+loo_compare(loo_bf_grm_20, loo_ct_grm_20)
+
+loo_model_weights(list(bf_grm = loo_bf_grm_20, ct_grm = loo_ct_grm_20))
+```
+
+
+
+# Step 5: Final model Wright map
 ```{r}
 source("scripts/07_fig6.R")
 
@@ -588,13 +614,13 @@ bf_grm_dif <- brm(
 ```{r}
 
 bf_dif2 <- bf(
-  response ~ 1 + gender + District + YearG + 
-    (1 + gender + District | item) + 
+  response ~ 1 + gender + District +
+    (1 + gender + District || item) + 
     (1 | id) + (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id),
   disc ~ 1 + (1 | item)
 )
 
-# Fit Model
+
 bf_grm_dif2 <- brm(
   formula = bf_dif2,
   data = data_3,
@@ -615,7 +641,7 @@ summary(bf_grm_dif2)
 
 source("scripts/08_fig7.R")
 
-combined_plot
+fig_7
 ```
 
 

@@ -68,7 +68,7 @@ df_disc_bf <- exp(ranef_bf$item[, , "disc_Intercept"]) %>%
 
 # P1: CT Difficulty
 p1 <- ggplot(df_diff_ct, aes(x = Estimate, y = item, color = dimension)) +
-  geom_point(size = 1) + 
+  geom_point(size = 1.5) + 
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0.3, linewidth = 0.6) + 
   scale_color_manual(values = custom_colors) +
   labs(title = "CT-GRSM: Difficulty", x = NULL, y = NULL) +
@@ -84,7 +84,7 @@ p1 <- ggplot(df_diff_ct, aes(x = Estimate, y = item, color = dimension)) +
 # P2: CT Discrimination
 p2 <- ggplot(df_disc_ct, aes(x = Estimate, y = item, color = dimension)) +
   geom_vline(xintercept = 0.5, linetype = "dashed", color = "grey60", linewidth = 0.5) +
-  geom_point(size = 1) + 
+  geom_point(size = 1.5) + 
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0.3, linewidth = 0.6) + 
   scale_color_manual(values = custom_colors) +
   labs(title = "CT-GRSM: Discrimination", x = NULL, y = NULL) +
@@ -100,7 +100,7 @@ p2 <- ggplot(df_disc_ct, aes(x = Estimate, y = item, color = dimension)) +
 
 # P3: BF Difficulty
 p3 <- ggplot(df_diff_bf, aes(x = Estimate, y = item, color = dimension)) +
-  geom_point(size = 1) + 
+  geom_point(size = 1.5) + 
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0.3, linewidth = 0.6) + 
   scale_color_manual(values = custom_colors) +
   labs(title = "BF-GRSM: Difficulty", x = "Estimate", y = NULL) +
@@ -116,7 +116,7 @@ p3 <- ggplot(df_diff_bf, aes(x = Estimate, y = item, color = dimension)) +
 # P4: BF Discrimination
 p4 <- ggplot(df_disc_bf, aes(x = Estimate, y = item, color = dimension)) +
   geom_vline(xintercept = 0.5, linetype = "dashed", color = "grey60", linewidth = 0.5) +
-  geom_point(size = 1) + 
+  geom_point(size = 1.5) + 
   geom_errorbar(aes(xmin = Q2.5, xmax = Q97.5), width = 0.3, linewidth = 0.6) + 
   scale_color_manual(values = custom_colors) +
   labs(title = "BF-GRSM: Discrimination", x = "Estimate", y = NULL) +

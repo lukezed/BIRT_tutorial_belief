@@ -171,6 +171,6 @@ print(fig_6)
 ggsave("figures/fig6_final_diagnostics.png",
        fig_6, 
        width = 6.5,
-       height = 8,
+       height = 7,
        dpi = 600, 
        bg = "white")

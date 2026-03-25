@@ -262,7 +262,175 @@ More importantly for our ongoing diagnostic concern, the threshold anomaly is no
  
 The discrimination panels unsurprisingly reveal substantially different discrimination values across items, confirming that the equal-discrimination assumption was inappropriate. Most items cluster in a reasonable range, but four items stand out: Bm_1_r, Bm_2_r, Bm_3_r, and Bm_4_r. These four items all belong to the "beliefs about mathematics" subscale and share the same reverse-coded formalist orientation (e.g., "Mathematics is a collection of rules and procedures"). Their discrimination estimates fall well below the conventional $\alpha = 0.5$ threshold for 'poor' items [@embretson2013itema],This indicates that item responses are virtually independent of the measured latent trait: a respondent's location on the latent continuum exerts little to no influence on their probability of selecting a given category. Their difficulty estimates are simultaneously problematic with very wide CrIs, meaning they are poorly identified by the data and nearly all respondents find it easy to endorse the exclusive end. While this problematic pattern was invisible under the RSM. Because the equal-discrimination assumption the poor measurement properties were diluted across the shared parameter structure rather than localised to specific items.
 
-## Item removal and 
+## Step 4: Item removal and link function comparison
+ 
+The four problematic items (Bm_1_r through Bm_4_r) all concern formalist statements about the nature of mathematics (see Appendix B for item wording). These items performed well in the large-scale international survey from which the instrument was adapted (Tatto, 2013), suggesting that the poor discrimination observed here reflects a cultural mismatch rather than a universal item defect. Chinese mathematics teachers may not perceive an emphasis on memorisation and procedural fluency as contradicting an emphasis on creativity and application, making these formalist items uninformative for differentiating teachers along the equity belief continuum in this population. Regardless of the explanation, the diagnostic evidence from Step 3 provides sufficient grounds for removal: these items contribute limited and potentially misleading information to the measurement model. After removal, the reduced dataset (`data_3`) contains 20 items.
+ 
+### Comparing ordinal link functions
+ 
+With dimensionality confirmed and misfitting items removed, we now compare IRT models that differ in their ordinal link function specifications. In addition to the GRSM already fitted, we specify two further model families on the reduced 20-item dataset.
+ 
+The GPCM (Generalised Partial Credit Model) retains the adjacent-category logit but frees the thresholds to vary across items. This can be achieved by using `(cs(1) | item)`, where `cs()` specifies category-specific effects:
+ 
+```r
+ct_gpcm_20 <- brm(
+  formula = bf(
+    response ~ 1 + (cs(1) | item) +
+      (0 + dim_m + dim_l + dim_p | id),
+    disc ~ 1 + (1 | item)
+  ),
+  data = data_3,
+  family = brmsfamily("acat", "logit")
+)
+```
+ 
+The GRM (Graded Response Model) constrains thresholds to be ordered within each item but uses a different link function entirely. Rather than modelling the odds of each category relative to its neighbour, the GRM models the cumulative probability $P(Y \geq c)$ using a cumulative logit. This requires changing the family specification from `"acat"` to `"cumulative"`:
+ 
+```r
+bf_grm_20 <- brm(
+  formula = bf(
+    response ~ 1 + (1 | item) +
+      (1 || id) + (0 + dim_m || id) +
+      (0 + dim_l || id) + (0 + dim_p || id),
+    disc ~ 1 + (1 | item)
+  ),
+  data = data_3,
+  family = brmsfamily("cumulative", "logit")
+)
+```
+ 
+### Model comparison and selection
+ 
+Crossing these three link function families with two dimensional structures (CT and BF) yields six candidate models, all fitted to the same 20-item, 4-category dataset. @tbl-loo-final-compare shows the comparsion results.
+ 
+| Model | ELPD (SE) | $\Delta$ELPD (SE) | $p_{\text{loo}}$ (SE) | $\hat{k} > 0.7$ (%) | Weight |
+|:---|:---|:---|:---|:---|:---|
+| `ct_gpcm_20` | $-2821.3 \ (41.8)$ | $0.0$ | $364.4 \ (12.1)$ | $9 \ (0.30\%)$ | $76.01\%$ |
+| `bf_gpcm_20` | $-2836.5 \ (41.9)$ | $-15.2 \ (5.3)$ | $361.4 \ (11.8)$ | $7 \ (0.23\%)$ | $0.02\%$ |
+| `bf_grm_20` | $-2849.4 \ (40.7)$ | $-28.1 \ (10.1)$ | $339.3 \ (10.3)$ | $1 \ (0.03\%)$ | $23.97\%$ |
+| `ct_grm_20` | $-2851.2 \ (40.7)$ | $-29.9 \ (9.9)$ | $342.1 \ (10.4)$ | $2 \ (0.07\%)$ | $< 0.01\%$ |
+| `ct_grsm_20` | $-2855.3 \ (41.0)$ | $-34.0 \ (8.8)$ | $326.1 \ (10.7)$ | $5 \ (0.17\%)$ | $< 0.01\%$ |
+| `bf_grsm_20` | $-2857.6 \ (41.0)$ | $-36.3 \ (8.9)$ | $327.0 \ (10.7)$ | $3 \ (0.10\%)$ | $< 0.01\%$ |
+ 
+: LOO-CV comparison of six candidate models. Models are ordered by ELPD. $\Delta$ELPD and its SE are computed relative to the best-fitting model. $\hat{k} > 0.7$ denotes the number of observations with problematic Pareto $\hat{k}$ diagnostic values. Stacking weights were computed via `loo_model_weights()`. {#tbl-loo-final-compare}
+ 
+Among the six models, `ct_gpcm_20` achieves the highest ELPD and the largest stacking weight (76%). This is expected: the GPCM allows both discrimination and thresholds to vary freely across items, providing the greatest flexibility. However, this flexibility comes at a cost. The PSIS-LOO diagnostics reveal that the two GPCM models produce the most problematic Pareto $\hat{k}$ values (9 and 7 observations with $\hat{k} > 0.7$, respectively). While these represent a very small proportion of the total ($< 0.3\%$) and are unlikely to substantially alter the overall ELPD estimates, they indicate that the LOO approximation is unreliable for these specific observations. The two GRM models are notably more stable, with only 1 and 2 problematic observations each.
+ 
+Both theoretical and practical considerations favour selecting a more stable model. Problematic Pareto $\hat{k}$ values signal that the model is highly sensitive to certain individual observations, meaning the leave-one-out posterior diverges substantially from the full posterior for these cases. As Vehtari et al. (2024) note, this is more likely to occur with less robust model specifications and highly influential observations.
+ 
+### Resolving problematic Pareto $\hat{k}$ values
+ 
+When problematic Pareto $\hat{k}$ values are detected, the first remedy is moment matching via `moment_match = TRUE`, which adjusts the MCMC draws to better approximate the leave-one-out posterior:
+ 
+```r
+loo_bf_grm_20 <- loo(bf_grm_20, moment_match = TRUE)
+```
+ 
+For `bf_grm_20`, moment matching successfully resolved the single problematic $\hat{k}$ value. If moment matching fails to resolve all problematic observations, `reloo = TRUE` can be added, which refits the entire model once for each remaining problematic observation.[^reloo]
+ 
+[^reloo]: Each refit runs the full MCMC sampling procedure. In our case, each refit took approximately 30 minutes, making 2 refits manageable.
+ 
+```r
+loo_ct_grm_20 <- loo(ct_grm_20, moment_match = TRUE, reloo = TRUE)
+```
+ 
+After calibration, both GRM models returned all Pareto $\hat{k}$ estimates below 0.7, and both produced valid MCSE estimates for their ELPD (0.3 for both models). Compared to the ELPD standard error of approximately 40.7, this confirms that the MCMC sampling was more than sufficient. In contrast, when problematic Pareto $\hat{k}$ values ($\hat{k} > 0.7$) remain uncalibrated, the theoretical variance of the importance weights diverges and the MCSE becomes unestimable.
+ 
+### Final model selection
+ 
+`bf_grm_20` trailed the top-ranked `ct_gpcm_20` by only approximately three standard errors in ELPD and received the second-largest stacking weight (24%), while exhibiting far superior diagnostics. We therefore proceed with `bf_grm_20` as the final measurement model. We can also compare the two GRM family models with calibrated LOO estimates to check the final choice.
+ 
+```r
+loo_compare(loo_bf_grm_20, loo_ct_grm_20)
+#>           elpd_diff se_diff
+#> bf_grm_20  0.0       0.0
+#> ct_grm_20 -1.7       1.2
+ 
+loo_model_weights(list(bf_grm = loo_bf_grm_20, ct_grm = loo_ct_grm_20))
+#> Method: stacking
+#> ------
+#>        weight
+#> bf_grm 1.000
+#> ct_grm 0.000
+```
+ 
+The calibrated comparison shows that the two GRM models are practically indistinguishable in predictive accuracy, but `bf_grm_20` receives 100% of the stacking weight. @fig-final-diag presents the Wright map for `bf_grm_20`. The top row shows item difficulty and discrimination estimates for the 20 retained items. The bottom four panels display the person parameter estimates for the general belief factor and the three dimension-specific residual factors (mathematics, learners, pedagogy), all plotted on a common scale.
+ 
+![Diagnostic Wright map for the final model (`bf_grm_20`). Top left: item difficulty with 95% CrIs. Top right: item discrimination (exponentiated scale). Bottom panels: person parameter estimates for the general factor and three dimension-specific factors, sorted by magnitude.](../figures/fig6_final_diagnostics.png){#fig-final-diag width="95%"}
+ 
+The item difficulty panel shows a well-distributed spread across the latent continuum with no abnormally wide credible intervals, confirming that the removal of the four misfitting items resolved the identification problems observed in Step 3. Discrimination values for the retained items are all above the $\alpha = 0.5$ threshold. The person parameter panels show approximately normal distributions for all four factors, with the general factor exhibiting the widest spread, consistent with its role as the dominant source of shared variance.
+ 
+@tbl-bf-grm-summary provides the key parameter estimates. All $\hat{R}$ values are at or below 1.01, indicating satisfactory convergence.
+ 
+\fontsize{10.5pt}{12.6pt}\selectfont
+
+| Parameter | Estimate | 95% CrI | $\hat{R}$ |
+|:---|---:|---:|---:|
+| **Person parameters** | | | |
+| SD of general belief | $1.76$ | $[0.85, 3.10]$ | $1.00$ |
+| SD of math-specific belief | $2.60$ | $[1.26, 4.47]$ | $1.00$ |
+| SD of learner-specific belief | $1.97$ | $[0.93, 3.39]$ | $1.00$ |
+| SD of pedagogy-specific belief | $1.39$ | $[0.55, 2.59]$ | $1.00$ |
+| **Thresholds** | | | |
+| 1: "disagree" to "neutral" | $-4.16$ | $[-7.42, -1.89]$ | $1.00$ |
+| 2: "neutral" to "agree" | $-0.93$ | $[-2.61, 0.39]$ | $1.01$ |
+| T3: "agree" to "strongly agree" | $5.60$ | $[2.57, 10.06]$ | $1.00$ |
+ 
+: Summary of key parameter estimates from the final model (`bf_grm_20`). Person parameter SDs are reported for the bi-factor structure; thresholds are population-level intercepts on the cumulative logit scale. {#tbl-bf-grm-summary}
+
+\normalsize
+
+ 
+The three thresholds are now in strictly monotonic order with well-separated credible intervals, confirming that the combination of category collapsing (Step 1), multidimensional structure (Step 2), freed discrimination (Step 3), and item removal (Step 4) has fully resolved the threshold anomaly that motivated the iterative refinement process.
+ 
+Among the person parameters, the math-specific factor has the largest SD ($2.60$), suggesting that after accounting for a shared equity orientation, teachers vary most in their beliefs about the nature of mathematics. The pedagogy-specific factor has the smallest SD ($1.39$), indicating relatively less residual variation in beliefs about teaching approaches. The general factor SD ($1.76$) falls between the two, confirming that all four factors capture meaningful individual differences.
+ 
+
+
+## Step 5: Differential item functioning and covariates
+ 
+Finally, we conduct a DIF analysis on the selected model to ensure that items function consistently across demographic subgroups, a property known as measurement invariance. When an item exhibits differential item functioning (DIF), respondents from different groups who share the same level of the latent trait have systematically different probabilities of endorsing a given category, which can bias group comparisons.
+ 
+One intuitive approach is to specify `(0 + gender | item)` alongside `gender` as a fixed effect. This estimates separate item-level random effects for males and females, giving us distinct posterior distributions of item difficulty for each group:
+ 
+```r
+bf_grm_dif <- brm(
+  formula = bf(
+    response ~ 1 + gender + (0 + gender | item) +
+      (1 || id) + (0 + dim_m || id) +
+      (0 + dim_l || id) + (0 + dim_p || id),
+    disc ~ 1 + (1 | item)
+  ),
+  data = data_3,
+  family = brmsfamily("cumulative", "logit")
+)
+```
+ 
+The benefit of this parameterisation is that we can directly inspect how males and females perform on each item. However, determining whether the male-female difference is statistically meaningful is less straightforward, because we do not have a single posterior for the difference itself. @bohn2025previc offers an engineering-level approximation: treating DIF as a diagnostic question and flagging items where the male and female posteriors are non-overlapping. Panel A of @fig-dif shows this diagnostic for all 20 items, and by this criterion all items pass the DIF test. It should be noted, however, that this is an overly optimistic diagnostic: even when two posterior distributions overlap, the difference between them can still be credible.^[This is analogous to a situation in frequentist inference where two confidence intervals overlap but the difference between the two means can be nonetheless statistically significant.]
+ 
+A more straightforward approach is to model DIF directly by specifying `(1 + gender | item)`, which treats one category as the baseline and estimates the male-minus-female deviation for each item. An item exhibits credible DIF when the 95% CrI for this deviation falls entirely on one side of zero. We extend this to include group variables simultaneously, testing for DIF across both gender and district:
+ 
+```r
+bf_grm_dif2 <- brm(
+  formula = bf(
+    response ~ 1 + gender + District +
+      # Forces independent random slopes to aid convergence
+      (1 + gender + District || item) +
+      (1 || id) + (0 + dim_m || id) +
+      (0 + dim_l || id) + (0 + dim_p || id),
+    disc ~ 1 + (1 | item)
+  ),
+  data = data_3,
+  family = brmsfamily("cumulative", "logit")
+)
+```
+ 
+@fig-dif presents the results. Panel B shows the item-level gender DIF effects (log-odds difference, male minus female) from `bf_grm_dif2`, and all 20 items have 95% CrIs that include zero;  Panel C shows the similar results for district (Districts 2 and 3 relative to District 1 as baseline), and again no item exhibits a credible DIF effect. 
+
+![Differential item functioning and covariate analysis. Panel A: posterior overlap diagnostic for gender `bf_grm_dif`. Panel B: item-level gender DIF effects from `bf_grm_dif2`. Panel C: item-level district DIF effects. Panel D: Estimated category response probabilities by district.](../figures/fig7_combined_dif.png){#fig-dif width="95%"}
+ 
+Because covariates are included directly in the measurement model, we simultaneously obtain group-level effects alongside the item-level DIF tests. Several notable population-level (fixed) effects emerge from `bf_grm_dif2`. The gender effect is strictly credible, showing that male teachers hold less inclusive beliefs ($-1.20$, 95% CrI $[-2.62, -0.04]$).The district effect, while its 95% CrI slightly overlaps zero for District 3 ($-1.29$, 95% CrI $[-2.89, 0.03]$), remains highly noteworthy. The vast majority of the posterior distribution lies below zero, indicating a strong downward trend in inclusive beliefs for teachers in lower-SES districts. As visualized in Panel D, this manifests in a systematic shift toward lower response categories. 
+
 
 
 

@@ -70,7 +70,7 @@ ggsave(
   filename = "figures/fig3_response_distribution.png", 
   plot = fig_3, 
   width = 6.5, 
-  height = 4.5, 
+  height = 4, 
   dpi = 600, 
   bg = "white",
   scale = 1 
