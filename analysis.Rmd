@@ -410,7 +410,7 @@ dimensional structures (CT and BF), yielding six models:
 # Formula:  response ~ 1 + (cs(1) | item) + ...
 #           cs(1) allows thresholds to vary by item
 
-options(future.globals.maxSize = 8 * 1024^3)
+
 # --- 1. GRSM  ---
 
 ct_grsm_20 <- brm(

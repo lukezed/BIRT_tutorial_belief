@@ -1099,9 +1099,9 @@ categories represent forms of disagreement, whereas merging the two
 middle categories would conflate ``disagree'' and ``neutral,'' which are
 substantively distinct.
 
-Before collapsing, we can first fitted a baseline Rating Scale Model
-(RSM) to the original 5-point data to inspect the threshold structure.
-In \texttt{brms}, the RSM is specified using
+Before collapsing, we can first fit a baseline Rating Scale Model (RSM)
+to the original 5-point data to inspect the threshold structure. In
+\texttt{brms}, the RSM is specified using
 \texttt{brmsfamily("acat",\ "logit")}, where \texttt{acat} denotes the
 adjacent-category parameterisation (modelling the odds of each response
 category relative to its neighbour) and \texttt{logit} specifies the
@@ -1117,6 +1117,17 @@ logistic link function.
 \NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
+
+As shown in Table~\ref{tbl-thresh-null}, Threshold 1 sits far from the
+others (\(-3.08\)), consistent with the near-absence of ``strongly
+disagree'' responses and confirming the need for category collapsing.
+But the baseline model also reveals a second, less expected pattern:
+Thresholds 2 and 3 are in reversed order (\(-0.38\) vs.~\(-0.56\)), with
+almost entirely overlapping CrIs. The level of the latent variable
+required for respondents to move from ``disagree'' to ``neutral'' is
+estimated as higher than that required to move from ``neutral'' to
+``agree,'' meaning the model cannot meaningfully distinguish these two
+transitions.
 
 \begin{table}
 
@@ -1139,17 +1150,6 @@ Threshold Transition & Estimate & 95\% CrI \\
 \end{longtable}
 
 \end{table}
-
-As shown in Table~\ref{tbl-thresh-null}, Threshold 1 sits far from the
-others (\(-3.08\)), consistent with the near-absence of ``strongly
-disagree'' responses and confirming the need for category collapsing.
-But the baseline model also reveals a second, less expected pattern:
-Thresholds 2 and 3 are in reversed order (\(-0.38\) vs.~\(-0.56\)), with
-almost entirely overlapping CrIs. The level of the latent variable
-required for respondents to move from ``disagree'' to ``neutral'' is
-estimated as higher than that required to move from ``neutral'' to
-``agree,'' meaning the model cannot meaningfully distinguish these two
-transitions.
 
 After collapsing categories 1 and 2, we fitted \texttt{merge\_rsm} with
 identical model specifications on the 4-category data. We can use
@@ -1318,15 +1318,14 @@ Model & ELPD difference & SE \\
 
 \begin{table}
 
-{\caption{{Threshold estimates from the unidimensional and
-multidimensional RSMs.}{\label{tbl-thresh-dim}}}
+{\caption{{Threshold estimates (with 95\% CrIs) from the unidimensional
+and multidimensional RSMs.}{\label{tbl-thresh-dim}}}
 \vspace{-20pt}}
 
 \begin{longtable}[]{@{}llll@{}}
 \toprule\noalign{}
-Threshold Transition & \texttt{merge\_rsm} (Est. {[}95\% CrI{]}) &
-\texttt{bf\_rsm} (Est. {[}95\% CrI{]}) & \texttt{ct\_rsm} (Est. {[}95\%
-CrI{]}) \\
+Threshold Transition & \texttt{merge\_rsm} & \texttt{bf\_rsm} &
+\texttt{ct\_rsm} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
@@ -2123,16 +2122,32 @@ substantive insights that a less thorough analysis might miss.
 
 \newpage
 
-\section{Ethical Statement}\label{ethical-statement}
+\section{Declarations}\label{declarations}
+
+\subsection{Funding}\label{funding}
+
+The authors did not receive support from any organisation for the
+submitted work.
+
+\subsection{Competing Interests}\label{competing-interests}
+
+The authors have no relevant financial or non-financial interests to
+disclose.
+
+\subsection{Ethics Approval}\label{ethics-approval}
 
 The Environment, Education and Development School Ethics Review
 Committee at the University of Manchester approved questionnaire
-distribution for this study (Ref: 2024-17321-33604). Participants
-acknowledged their rights and completed all consent checkboxes before
-accessing the questionnaire. Completion and submission of the full
-questionnaire indicated informed consent.
+distribution for this study (Ref: 2024-17321-33604).
 
-\section{Open Practices Statement}\label{open-practices-statement}
+\subsection{Consent to Participate}\label{consent-to-participate}
+
+Participants acknowledged their rights and completed all consent
+checkboxes before accessing the questionnaire. Completion and submission
+of the full questionnaire indicated informed consent.
+
+\subsection{Data and Code
+Availability}\label{data-and-code-availability}
 
 All data (anonymised), analysis code, and model objects are available at
 \url{https://github.com/lukezed/BIRT_tutorial_belief}. None of the

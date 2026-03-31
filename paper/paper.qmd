@@ -234,7 +234,7 @@ A small number of respondents answered only the first few items and left all rem
 
 More consequential is the sparsity of the lowest response category. Category 1 ("strongly disagree") was very rarely endorsed: twelve of 24 items received fewer than three responses in this category. When very few respondents select a given category, the model lacks sufficient information to identify the threshold involving that category. Bayesian priors can regularise the estimate to prevent divergence, but the resulting posterior will be prior-dominated rather than data-informed. This is an information problem that no estimation framework can resolve, and it motivates collapsing categories 1 and 2 into a single "disagree" category, reducing the scale from five to four ordered levels. The decision is also justified on semantic grounds: both categories represent forms of disagreement, whereas merging the two middle categories would conflate "disagree" and "neutral," which are substantively distinct.
 
-Before collapsing, we can first fitted a baseline Rating Scale Model (RSM) to the original 5-point data to inspect the threshold structure. In `brms`, the RSM is specified using `brmsfamily("acat", "logit")`, where `acat` denotes the adjacent-category parameterisation (modelling the odds of each response category relative to its neighbour) and `logit` specifies the logistic link function.
+Before collapsing, we can first fit a baseline Rating Scale Model (RSM) to the original 5-point data to inspect the threshold structure. In `brms`, the RSM is specified using `brmsfamily("acat", "logit")`, where `acat` denotes the adjacent-category parameterisation (modelling the odds of each response category relative to its neighbour) and `logit` specifies the logistic link function.
 
 ``` r
 null_rsm <- brm(
@@ -245,6 +245,8 @@ null_rsm <- brm(
 )
 ```
 
+As shown in @tbl-thresh-null, Threshold 1 sits far from the others ($-3.08$), consistent with the near-absence of "strongly disagree" responses and confirming the need for category collapsing. But the baseline model also reveals a second, less expected pattern: Thresholds 2 and 3 are in reversed order ($-0.38$ vs. $-0.56$), with almost entirely overlapping CrIs. The level of the latent variable required for respondents to move from "disagree" to "neutral" is estimated as higher than that required to move from "neutral" to "agree," meaning the model cannot meaningfully distinguish these two transitions.
+
 | Threshold Transition                 | Estimate |          95% CrI |
 |:-------------------------------------|---------:|-----------------:|
 | 1: "strongly disagree" to "disagree" |  $-3.08$ | $[-3.57, -2.61]$ |
@@ -253,8 +255,6 @@ null_rsm <- brm(
 | 4: "agree" to "strongly agree"       |   $2.16$ |   $[1.70, 2.62]$ |
 
 : Threshold estimates from `null_rsm`. {#tbl-thresh-null tbl-colwidths="false"}
-
-As shown in @tbl-thresh-null, Threshold 1 sits far from the others ($-3.08$), consistent with the near-absence of "strongly disagree" responses and confirming the need for category collapsing. But the baseline model also reveals a second, less expected pattern: Thresholds 2 and 3 are in reversed order ($-0.38$ vs. $-0.56$), with almost entirely overlapping CrIs. The level of the latent variable required for respondents to move from "disagree" to "neutral" is estimated as higher than that required to move from "neutral" to "agree," meaning the model cannot meaningfully distinguish these two transitions.
 
 After collapsing categories 1 and 2, we fitted `merge_rsm` with identical model specifications on the 4-category data. We can use `ranef()` to extract item and person parameter estimates and construct a Wright map (@fig-wright-map-rsm).
 
@@ -325,13 +325,13 @@ For three models fitted to the same response variable and the same dataset, LOO-
 
 : LOO-CV comparison of dimensional structures. Models are ordered by ELPD; differences are relative to the best-fitting model. {#tbl-loo-dim}
 
-| Threshold Transition | `merge_rsm` (Est. \[95% CrI\]) | `bf_rsm` (Est. \[95% CrI\]) | `ct_rsm` (Est. \[95% CrI\]) |
-|:-----------------|:-----------------|:-----------------|:-----------------|
+| Threshold Transition | `merge_rsm` | `bf_rsm` | `ct_rsm` |
+|:--------------------------|:--------------|:--------------|:--------------|
 | 1: "disagree" to "neutral" | $-0.40 \ [-0.91, 0.10]$ | $-0.55 \ [-1.10, 0.01]$ | $-0.54 \ [-1.11, 0.05]$ |
 | 2: "neutral" to "agree" | $-0.56 \ [-1.06, -0.06]$ | $-0.55 \ [-1.10, 0.01]$ | $-0.54 \ [-1.11, 0.04]$ |
 | 3: "agree" to "strongly agree" | $2.27 \ [1.77, 2.79]$ | $2.44 \ [1.88, 3.00]$ | $2.46 \ [1.89, 3.04]$ |
 
-: Threshold estimates from the unidimensional and multidimensional RSMs. {#tbl-thresh-dim tbl-colwidths="false"}
+: Threshold estimates (with 95% CrIs) from the unidimensional and multidimensional RSMs. {#tbl-thresh-dim tbl-colwidths="false"}
 
 The multidimensional models do partially improve the threshold structure. @tbl-thresh-dim shows the threshold estimates from both models. The reversal observed in Step 1 is gone, but the first two thresholds remain almost identical with fully overlapping credible intervals under both models, and the model still cannot distinguish the "disagree" to "neutral" and "neutral" to "agree" transitions. Further collapsing these two categories is not a viable solution: "disagree" and "neutral" are semantically distinct responses, and both categories have sufficient observations across items, so merging them would sacrifice meaningful variation in the data without a substantive justification. Accounting for dimensionality has therefore improved but not resolved the threshold anomaly.
 
@@ -357,29 +357,28 @@ The four problematic items (Bm_1_r through Bm_4_r) all concern formalist stateme
 
 With the four misfitting items removed, thresholds under both `ct_grsm_20` and `bf_grsm_20` are now in monotonic order. `ct_grsm_20` estimates moderate to strong correlations among the three dimensions, with the strongest association between mathematics and pedagogy beliefs ($r = 0.51$, 95% CrI $[0.31, 0.68]$), suggesting that teachers who view mathematics as a creative and applied discipline also tend to be more receptive to innovative teaching approaches. `bf_grsm_20` also successfully separates a general inclusive belief factor (SD $= 1.73$, 95% CrI $[0.82, 2.98]$) from dimension-specific residuals.
 
-
 | Parameter | Estimate | 95% CrI | $\hat{R}$ |
-|:-----------------|:---------|:-----------------|:----------|
-| ***`ct_grsm_20`: Correlated-traits GRSM*** | | | |
-| **Person parameters** | | | |
+|:---|:---|:---|:---|
+| ***`ct_grsm_20`: Correlated-traits GRSM*** |  |  |  |
+| **Person parameters** |  |  |  |
 | SD of math belief | $2.91$ | $[1.36, 4.97]$ | $1.00$ |
 | SD of learner belief | $2.09$ | $[0.98, 3.56]$ | $1.00$ |
 | SD of pedagogy belief | $2.01$ | $[0.92, 3.44]$ | $1.00$ |
 | Cor(math, learner) | $0.28$ | $[0.09, 0.46]$ | $1.00$ |
 | Cor(math, pedagogy) | $0.51$ | $[0.31, 0.68]$ | $1.00$ |
 | Cor(learner, pedagogy) | $0.45$ | $[0.24, 0.63]$ | $1.00$ |
-| **Thresholds** | | | |
+| **Thresholds** |  |  |  |
 | 1: "disagree" to "neutral" | $-2.22$ | $[-4.17, -0.79]$ | $1.00$ |
 | 2: "neutral" to "agree" | $-1.55$ | $[-3.25, -0.33]$ | $1.00$ |
 | 3: "agree" to "strongly agree" | $4.93$ | $[2.14, 8.88]$ | $1.00$ |
-| | | | |
-| ***`bf_grsm_20`: Bi-factor GRSM*** | | | |
-| **Person parameters** | | | |
+|  |  |  |  |
+| ***`bf_grsm_20`: Bi-factor GRSM*** |  |  |  |
+| **Person parameters** |  |  |  |
 | SD of general belief | $1.73$ | $[0.82, 2.98]$ | $1.00$ |
 | SD of math-specific belief | $2.78$ | $[1.34, 4.79]$ | $1.00$ |
 | SD of learner-specific belief | $1.85$ | $[0.86, 3.22]$ | $1.00$ |
 | SD of pedagogy-specific belief | $1.39$ | $[0.53, 2.57]$ | $1.00$ |
-| **Thresholds** | | | |
+| **Thresholds** |  |  |  |
 | 1: "disagree" to "neutral" | $-2.53$ | $[-4.72, -1.00]$ | $1.00$ |
 | 2: "neutral" to "agree" | $-1.75$ | $[-3.55, -0.41]$ | $1.00$ |
 | 3: "agree" to "strongly agree" | $5.69$ | $[2.60, 10.17]$ | $1.00$ |
@@ -604,11 +603,25 @@ Although the primary contribution of this tutorial is methodological, the case s
 
 \newpage
 
-# Ethical Statement
+# Declarations
 
-The Environment, Education and Development School Ethics Review Committee at the University of Manchester approved questionnaire distribution for this study (Ref: 2024-17321-33604). Participants acknowledged their rights and completed all consent checkboxes before accessing the questionnaire. Completion and submission of the full questionnaire indicated informed consent.
+## Funding
 
-# Open Practices Statement
+The authors did not receive support from any organisation for the submitted work.
+
+## Competing Interests
+
+The authors have no relevant financial or non-financial interests to disclose.
+
+## Ethics Approval
+
+The Environment, Education and Development School Ethics Review Committee at the University of Manchester approved questionnaire distribution for this study (Ref: 2024-17321-33604).
+
+## Consent to Participate
+
+Participants acknowledged their rights and completed all consent checkboxes before accessing the questionnaire. Completion and submission of the full questionnaire indicated informed consent.
+
+## Data and Code Availability
 
 All data (anonymised), analysis code, and model objects are available at <https://github.com/lukezed/BIRT_tutorial_belief>. None of the reported analyses were preregistered.
 
