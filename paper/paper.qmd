@@ -625,6 +625,16 @@ Participants acknowledged their rights and completed all consent checkboxes befo
 
 All data (anonymised), analysis code, and model objects are available at <https://github.com/lukezed/BIRT_tutorial_belief>. None of the reported analyses were preregistered.
 
+## Consent for Publication
+
+Not applicable.
+
+# Open Practices Statement
+
+All data (anonymised), analysis code, and model objects are available at
+<https://github.com/lukezed/BIRT_tutorial_belief>. None of the reported
+analyses were preregistered.
+
 \newpage
 
 # References
