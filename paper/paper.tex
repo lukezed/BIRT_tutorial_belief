@@ -529,24 +529,22 @@ to rely on the MH-RM algorithm\footnote{Metropolis-Hastings
   Robbins-Monro (\citeproc{ref-cai2010highdi}{Cai, 2010}).}, which uses
 Metropolis-Hastings sampling to approximate the intractable integrals.
 Frequentist MIRT thus borrows Bayesian computational machinery while
-remaining within a frequentist estimation framework. \footnote{Metropolis-Hastings
-  Robbins-Monro (\citeproc{ref-cai2010highdi}{Cai, 2010}).}:
-Metropolis-Hastings Robbins-Monro (\citeproc{ref-cai2010highdi}{Cai,
-2010}). By contrast, Bayesian IRT employs MCMC natively and, through the
-prior \(p(\theta_p, \xi_i, \alpha_i)\), stabilises precisely those
-parameters that are most data-starved. The advantages are now well
-documented: Fujimoto and Neugebauer
-(\citeproc{ref-fujimoto2020genera}{2020}) established a general Bayesian
-MIRT framework encompassing bi-factor and other complex structures,
-demonstrating robust performance on an empirical dataset of only
-\(N = 121\); König et al. (\citeproc{ref-konig2022robust}{2022}) showed
-that a hierarchical Bayesian two-parameter logistic model with
-appropriately specified weakly informative priors can produce unbiased
-item and person parameter estimates even with \(N < 100\). More broadly,
-Bayesian estimation outperforms MML for multidimensional IRT at moderate
-sample sizes and is particularly beneficial when response categories are
-sparsely endorsed (\citeproc{ref-bainter2019impact}{Bainter \& Forster,
-2019}; \citeproc{ref-padgett2024regula}{Padgett et al., 2024}), a common
+remaining within a frequentist estimation framework. By contrast,
+Bayesian IRT employs MCMC natively and, through the prior
+\(p(\theta_p, \xi_i, \alpha_i)\), stabilises precisely those parameters
+that are most data-starved. The advantages are now well documented:
+Fujimoto and Neugebauer (\citeproc{ref-fujimoto2020genera}{2020})
+established a general Bayesian MIRT framework encompassing bi-factor and
+other complex structures, demonstrating robust performance on an
+empirical dataset of only \(N = 121\); König et al.
+(\citeproc{ref-konig2022robust}{2022}) showed that a hierarchical
+Bayesian two-parameter logistic model with appropriately specified
+weakly informative priors can produce unbiased item and person parameter
+estimates even with \(N < 100\). More broadly, Bayesian estimation
+outperforms MML for multidimensional IRT at moderate sample sizes and is
+particularly beneficial when response categories are sparsely endorsed
+(\citeproc{ref-bainter2019impact}{Bainter \& Forster, 2019};
+\citeproc{ref-padgett2024regula}{Padgett et al., 2024}), a common
 occurrence in Likert-scale instruments where extreme categories receive
 few responses.
 
@@ -2061,13 +2059,13 @@ sampled population. The same workflow framework thus led to different
 outcomes and different substantive conclusions for a different
 instrument.
 
-It is important to note that a comprehensive Bayesian workflow can
-encompass more than what we have demonstrated here. Prior predictive
-checks and prior sensitivity analysis, as demonstrated by Winter et al.
-(\citeproc{ref-winter2025tutoria}{2025}), were not incorporated. This
-reflects a deliberate scope decision: our focus was on model comparison
-and diagnostic reasoning as drivers of iterative model selection, and
-prior specification was treated as a relatively settled choice following
+Prior predictive checks and prior sensitivity analysis, as demonstrated
+by Winter et al. (\citeproc{ref-winter2025tutoria}{2025}), were not
+incorporated. Posterior predictive checks were conducted for the final
+model and are available in the companion repository. This reflects a
+deliberate scope decision: our focus was on model comparison and
+diagnostic reasoning as drivers of iterative model selection, and prior
+specification was treated as a relatively settled choice following
 Bürkner (\citeproc{ref-burkner2021bayesi}{2021}). Researchers working in
 contexts where prior sensitivity is a particular concern should
 integrate these additional steps.

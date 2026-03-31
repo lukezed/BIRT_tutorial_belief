@@ -554,7 +554,6 @@ model_weights(
 
 ```{r}
 
-options(future.globals.maxSize = 8 * 1024^3) 
 
 # CT-GRM
 loo_ct_grm_20 <- loo(ct_grm_20, moment_match = TRUE, reloo = TRUE)
@@ -582,6 +581,11 @@ source("scripts/07_fig6.R")
 
 fig_6
 ```
+```{r}
+pp_check(bf_grm_20,type = "bars", ndraws = 100)
+pp_check(bf_grm_20, type = "bars_grouped", group = "item", ndraws = 100)
+```
+
 # Step 6: Covariates and Differential Item Functioning
 
 DIF analysis tests whether individual items function differently across 
