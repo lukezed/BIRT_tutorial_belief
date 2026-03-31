@@ -191,11 +191,11 @@
 
 
 
-\title{A reusable Bayesian IRT workflow for small-sample instrument
-validation: A tutorial with a case study in teacher belief measurement}
+\title{A reusable Bayesian IRT workflow for instrument validation: A
+tutorial with a small-sample case study in teacher belief measurement}
 
 
-\shorttitle{BAYESIAN IRT WORKFLOW FOR SMALL-SAMPLE VALIDATION}
+\shorttitle{BAYESIAN IRT WORKFLOW FOR INSTRUMENT VALIDATION}
 
 
 \usepackage{etoolbox}
@@ -378,35 +378,36 @@ scale, the dimensionality of the construct, the behaviour of individual
 items, and the appropriateness of the chosen model specification for
 different subgroups. Each decision depends on diagnostic evidence from
 the previous step, making the process inherently iterative. Bayesian
-item response theory (IRT) is well suited to this task: it stabilises
-estimation under the sample-size constraints typical of such studies,
-and the full posterior distributions it produces provide the
-parameter-level diagnostic information that each decision point
-requires.
+item response theory (IRT) is well suited to this task. The full
+posterior distributions it produces provide parameter-level diagnostic
+information that each decision point requires, and its prior-based
+regularisation stabilises estimation when sample sizes are limited. This
+diagnostic infrastructure is valuable regardless of sample size, but
+becomes especially consequential when data are sparse and each modelling
+decision must be justified on the basis of uncertain estimates.
 
 Gelman et al. (\citeproc{ref-gelman2020bayesi}{2020}) have articulated a
-general workflow framework for iterative Bayesian modelling, in which
-the researcher begins with prior expectations about plausible models,
-confronts those expectations with diagnostic evidence, and updates their
-modelling choices accordingly. Their framework is accompanied by worked
-examples across a range of applied settings, and several tutorials have
-since demonstrated how Bayesian IRT models can be specified and
-estimated in accessible software (e.g.,
+general workflow framework for iterative Bayesian modelling that is
+domain-general by design, with worked examples spanning a range of
+applied settings. Several tutorials have since demonstrated how Bayesian
+IRT models can be specified and estimated in accessible software (e.g.,
 \citeproc{ref-burkner2021bayesi}{Bürkner, 2021};
 \citeproc{ref-burkner2019ordina}{Bürkner \& Vuorre, 2019};
-\citeproc{ref-winter2025tutoria}{Winter et al., 2025}). What has
-received less attention is the instantiation of this iterative logic
-within the specific domain of ordinal IRT instrument validation. The
-decisions involved here are not only statistical but substantive:
-whether to collapse response categories requires weighing empirical
-sparsity against semantic distinctness; whether to free discrimination
-parameters is simultaneously a model-fit question and a diagnostic tool
-for identifying problematic items; whether to prefer a slightly
-worse-fitting model with cleaner diagnostics over a better-fitting model
-with unstable leave-one-out approximations requires reasoning that
-extends beyond any single metric. Existing tutorials tend to treat these
-as isolated technical choices rather than as a connected sequence in
-which each step constrains and motivates the next.
+\citeproc{ref-winter2025tutoria}{Winter et al., 2025}), but these focus
+primarily on model specification and estimation rather than on the
+iterative diagnostic logic that connects one modelling decision to the
+next. What has received less attention is the instantiation of this
+iterative logic within the specific domain of ordinal IRT instrument
+validation. The decisions involved here are not only statistical but
+substantive: whether to collapse response categories requires weighing
+empirical sparsity against semantic distinctness; whether to free
+discrimination parameters is simultaneously a model-fit question and a
+diagnostic tool for identifying problematic items; whether to choose a
+slightly worse-fitting model with cleaner diagnostics over a
+better-fitting model with unstable leave-one-out approximations requires
+reasoning that extends beyond any single metric. Existing tutorials tend
+to treat these as isolated technical choices rather than as a connected
+sequence in which each step constrains and motivates the next.
 
 This tutorial instantiates the Bayesian workflow for ordinal IRT
 instrument validation, using the validation of a 24-item teacher belief
@@ -425,7 +426,7 @@ implements the entire workflow within the \texttt{brms} package
 (\citeproc{ref-burkner2017brmsb}{Bürkner, 2017}), showing that complex
 multidimensional IRT models, including correlated-traits and bi-factor
 specifications with item-specific discrimination, covariates, and
-differential item functioning, can be specified, compared, and diagnosed
+differential item functioning, can be specified, compared, and evaluated
 within a single, accessible software environment. The workflow guides
 researchers through five integrated steps: (1) preprocessing decisions
 for sparse ordinal categories, (2) comparing competing dimensional
@@ -446,6 +447,12 @@ and underlying traits. Compared with classical test theory, IRT provides
 item-level analysis with considerably greater flexibility and modelling
 freedom, making it a central tool for developing and refining
 measurement instruments in educational and psychological research.
+Bayesian estimation extends these advantages in two respects:
+prior-based regularisation stabilises the highly parameterised models
+that frequentist methods struggle with at small sample sizes, and the
+full posterior distributions make parameter-level uncertainty directly
+visible, supporting the diagnostic reasoning that instrument validation
+requires at any sample size.
 
 However, standard frequentist IRT faces increasingly apparent
 challenges, particularly when multidimensional structures are involved.
@@ -513,27 +520,33 @@ parameterised models that frequentist methods struggle with most.
 Frequentist MIRT depends on integrating over the latent trait
 distribution within the marginal likelihood \(p(\mathbf{y})\), a
 procedure that demands large samples for numerical stability. When data
-are insufficient, frequentist software may fail to converge, produce
-boundary estimates, or internally fall back on MCMC-based approximation
-algorithms such as the MH-RM algorithm in \texttt{mirt}
-(\citeproc{ref-chalmers2012mirt}{Chalmers, 2012},
-\citeproc{ref-chalmers2015exten}{2015}), effectively borrowing Bayesian
-computational machinery while remaining within a frequentist framework.
-By contrast, Bayesian IRT employs MCMC natively and, through the prior
-\(p(\theta_p, \xi_i, \alpha_i)\), stabilises precisely those parameters
-that are most data-starved. The advantages are now well documented:
-Fujimoto and Neugebauer (\citeproc{ref-fujimoto2020genera}{2020})
-established a general Bayesian MIRT framework encompassing bi-factor and
-other complex structures, demonstrating robust performance on an
-empirical dataset of only \(N = 121\); König et al.
-(\citeproc{ref-konig2022robust}{2022}) showed that a hierarchical
-Bayesian two-parameter logistic model with appropriately specified
-weakly informative priors can produce unbiased item and person parameter
-estimates even with \(N < 100\). More broadly, Bayesian estimation
-outperforms MML for multidimensional IRT at moderate sample sizes and is
-particularly beneficial when response categories are sparsely endorsed
-(\citeproc{ref-bainter2019impact}{Bainter \& Forster, 2019};
-\citeproc{ref-padgett2024regula}{Padgett et al., 2024}), a common
+are insufficient, frequentist software may fail to converge or produce
+boundary estimates. Even with adequate samples, multidimensional models
+require integration over the latent trait distribution that scales
+exponentially with dimensionality, forcing frequentist implementations
+such as \texttt{mirt} (\citeproc{ref-chalmers2012mirt}{Chalmers, 2012})
+to rely on the MH-RM algorithm\footnote{Metropolis-Hastings
+  Robbins-Monro (\citeproc{ref-cai2010highdi}{Cai, 2010}).}, which uses
+Metropolis-Hastings sampling to approximate the intractable integrals.
+Frequentist MIRT thus borrows Bayesian computational machinery while
+remaining within a frequentist estimation framework. \footnote{Metropolis-Hastings
+  Robbins-Monro (\citeproc{ref-cai2010highdi}{Cai, 2010}).}:
+Metropolis-Hastings Robbins-Monro (\citeproc{ref-cai2010highdi}{Cai,
+2010}). By contrast, Bayesian IRT employs MCMC natively and, through the
+prior \(p(\theta_p, \xi_i, \alpha_i)\), stabilises precisely those
+parameters that are most data-starved. The advantages are now well
+documented: Fujimoto and Neugebauer
+(\citeproc{ref-fujimoto2020genera}{2020}) established a general Bayesian
+MIRT framework encompassing bi-factor and other complex structures,
+demonstrating robust performance on an empirical dataset of only
+\(N = 121\); König et al. (\citeproc{ref-konig2022robust}{2022}) showed
+that a hierarchical Bayesian two-parameter logistic model with
+appropriately specified weakly informative priors can produce unbiased
+item and person parameter estimates even with \(N < 100\). More broadly,
+Bayesian estimation outperforms MML for multidimensional IRT at moderate
+sample sizes and is particularly beneficial when response categories are
+sparsely endorsed (\citeproc{ref-bainter2019impact}{Bainter \& Forster,
+2019}; \citeproc{ref-padgett2024regula}{Padgett et al., 2024}), a common
 occurrence in Likert-scale instruments where extreme categories receive
 few responses.
 
@@ -604,33 +617,34 @@ iterative workflow demonstrated here. For a detailed comparison of
 \section{Ordinal IRT Model Families and Related
 Work}\label{ordinal-irt-model-families-and-related-work}
 
-We'll briefly introduce the ordinal IRT models and dimensional
-structures used in this tutorial, alongside the existing work that
+We will briefly introduce the ordinal IRT models and dimensional
+structures used in this tutorial, alongside the related work that
 informs our approach.
 
-The most constrained yet concise ordinal IRT model considered used in
-this paper is the rating scale model (RSM,
-\citeproc{ref-andrich1978rating}{Andrich, 1978}), which uses an
-adjacent-category logit link and assumes that all items share both the
-same set of thresholds and the same discrimination (\(\alpha = 1\)).
-Relaxing the threshold constraint so that each item has its own
-threshold spacing yields the partial credit model (PCM,
+The most constrained yet concise ordinal IRT model used in this paper is
+the rating scale model (RSM, \citeproc{ref-andrich1978rating}{Andrich,
+1978}), which uses an adjacent-category logit link and assumes that all
+items share both the same set of thresholds and the same discrimination
+(\(\alpha = 1\)). Relaxing the threshold constraint so that each item
+has its own threshold spacing yields the partial credit model (PCM,
 \citeproc{ref-masters1982rasch}{Masters, 1982}). Both the RSM and PCM
-constrain discrimination to be equal across items. Introducing
-item-specific discrimination produces their generalised counterparts:
-the GRSM and GPCM, respectively. Another widely used model that
-simultaneously estimates item-specific difficulties and discrimination
+are one-parameter models in the Rasch family, where discrimination is
+constrained to be equal across items. Introducing item-specific
+discrimination produces their two-parameter generalised counterparts:
+the GRSM and GPCM, respectively. Another widely used two-parameter model
 is the graded response model (GRM,
-\citeproc{ref-samejima1969estima}{Samejima, 1969}), which differs from
-the adjacent-category family in its use of a cumulative logit link:
-rather than modelling the odds of each category relative to its
-neighbour, the GRM models the cumulative probability \(P(Y \geq c)\) of
-responding at or above each threshold.\footnote{In its original
-  formulation (\citeproc{ref-samejima1969estima}{Samejima, 1969}), the
-  GRM estimates item-specific thresholds. The implementation used in
-  this tutorial is a constrained variant in which threshold spacing is
-  shared across items, with item differences captured through a location
-  parameter that shifts all thresholds equally. See
+\citeproc{ref-samejima1969estima}{Samejima, 1969}), the polytomous
+extension of the two-parameter logistic model (2PL) for ordered
+categories, which differs from the adjacent-category family in its use
+of a cumulative logit link: rather than modelling the odds of each
+category relative to its neighbour, the GRM models the cumulative
+probability \(P(Y \geq c)\) of responding at or above each
+threshold.\footnote{In its original formulation
+  (\citeproc{ref-samejima1969estima}{Samejima, 1969}), the GRM estimates
+  item-specific thresholds. The implementation used in this tutorial is
+  a constrained variant in which threshold spacing is shared across
+  items, with item differences captured through a location parameter
+  that shifts all thresholds equally. See
   \hyperref[apx-models]{Appendix~A} for details.} Bürkner and Vuorre
 (\citeproc{ref-burkner2019ordina}{2019}) provide a detailed treatment of
 the distinction between adjacent-category and cumulative link functions,
@@ -730,10 +744,9 @@ split-chain \(\hat{R}\) statistic
 (\citeproc{ref-vehtari2021ranknoa}{Vehtari et al., 2021}), with values
 below 1.01 required for all parameters, alongside the effective sample
 size (ESS), for which a minimum of 400 total draws is recommended
-(\citeproc{ref-vehtari2021ranknoa}{Vehtari et al., 2021}), equivalent to
-at least 100 effective draws per chain when using four chains. The
-presence of divergent transitions, which signal regions of the posterior
-geometry that the sampler fails to explore, is also monitored.
+(\citeproc{ref-vehtari2021ranknoa}{Vehtari et al., 2021}). The presence
+of divergent transitions, which signal regions of the posterior geometry
+that the sampler fails to explore, is also monitored.
 
 Although all models reported in this tutorial met these convergence
 criteria after tuning, reaching convergence for complex multidimensional
@@ -855,10 +868,10 @@ functioning}\label{differential-item-functioning}
 
 Differential item functioning (DIF) occurs when respondents from
 different groups who share the same level of the latent trait have
-systematically different probabilities of endorsing a given response
-category. Within the Bayesian framework, DIF is tested by incorporating
-group variables as covariates with item-level random slopes, allowing
-the magnitude of group differences to vary across items while partial
+systematically different probabilities of responding to a given item.
+Within the Bayesian framework, DIF is tested by incorporating group
+variables as covariates with item-level random slopes, allowing the
+magnitude of group differences to vary across items while partial
 pooling regularises the estimates toward a common mean
 (\citeproc{ref-burkner2021bayesi}{Bürkner, 2021}). An item exhibits
 credible DIF when the 95\% credible interval for its group-specific
@@ -1105,8 +1118,6 @@ logistic link function.
 \end{Highlighting}
 \end{Shaded}
 
-\fontsize{10.5pt}{12.6pt}\selectfont
-
 \begin{table}
 
 {\caption{{Threshold estimates from
@@ -1128,8 +1139,6 @@ Threshold Transition & Estimate & 95\% CrI \\
 \end{longtable}
 
 \end{table}
-
-\normalsize
 
 As shown in Table~\ref{tbl-thresh-null}, Threshold 1 sits far from the
 others (\(-3.08\)), consistent with the near-absence of ``strongly
@@ -1166,6 +1175,14 @@ construct a Wright map (Figure~\ref{fig-wright-map-rsm}).
 \end{Highlighting}
 \end{Shaded}
 
+The item difficulty map (Figure~\ref{fig-wright-map-rsm}) shows a
+satisfactory distribution of difficulties across the latent continuum,
+with reasonably sized credible intervals and no abnormally wide
+estimates. The person ability distribution is approximately normal,
+though a handful of respondents exhibit very wide credible intervals,
+likely reflecting the inconsistent response patterns noted earlier.
+Overall, item-person targeting appears adequate.
+
 \begin{figure}
 
 \caption{\label{fig-wright-map-rsm}Wright map from \texttt{merge\_rsm}.
@@ -1179,14 +1196,6 @@ estimates sorted by magnitude.}
 }
 
 \end{figure}%
-
-The item difficulty map shows a satisfactory distribution of
-difficulties across the latent continuum, with reasonably sized credible
-intervals and no abnormally wide estimates. The person ability
-distribution is approximately normal, though a handful of respondents
-exhibit very wide credible intervals, likely reflecting the inconsistent
-response patterns noted earlier. Overall, item-person targeting appears
-adequate.
 
 The threshold reversal however persists. Thresholds 1 (\(-0.40\), CrI
 \([-0.91, 0.1]\)) and 2 (\(-0.56\), CrI \([-1.06, -0.06]\)) of
@@ -1309,24 +1318,25 @@ Model & ELPD difference & SE \\
 
 \begin{table}
 
-{\caption{{Threshold estimates from the multidimensional
-RSMs.}{\label{tbl-thresh-dim}}}
+{\caption{{Threshold estimates from the unidimensional and
+multidimensional RSMs.}{\label{tbl-thresh-dim}}}
 \vspace{-20pt}}
 
-\begin{longtable}[]{@{}lll@{}}
+\begin{longtable}[]{@{}llll@{}}
 \toprule\noalign{}
-Threshold Transition & \texttt{bf\_rsm} (Est. {[}95\% CrI{]}) &
-\texttt{ct\_rsm} (Est. {[}95\% CrI{]}) \\
+Threshold Transition & \texttt{merge\_rsm} (Est. {[}95\% CrI{]}) &
+\texttt{bf\_rsm} (Est. {[}95\% CrI{]}) & \texttt{ct\_rsm} (Est. {[}95\%
+CrI{]}) \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-1: ``disagree'' to ``neutral'' & \(-0.55 \ [-1.10, 0.01]\) &
-\(-0.54 \ [-1.11, 0.05]\) \\
-2: ``neutral'' to ``agree'' & \(-0.55 \ [-1.10, 0.01]\) &
-\(-0.54 \ [-1.11, 0.04]\) \\
-3: ``agree'' to ``strongly agree'' & \(2.44 \ [1.88, 3.00]\) &
-\(2.46 \ [1.89, 3.04]\) \\
+1: ``disagree'' to ``neutral'' & \(-0.40 \ [-0.91, 0.10]\) &
+\(-0.55 \ [-1.10, 0.01]\) & \(-0.54 \ [-1.11, 0.05]\) \\
+2: ``neutral'' to ``agree'' & \(-0.56 \ [-1.06, -0.06]\) &
+\(-0.55 \ [-1.10, 0.01]\) & \(-0.54 \ [-1.11, 0.04]\) \\
+3: ``agree'' to ``strongly agree'' & \(2.27 \ [1.77, 2.79]\) &
+\(2.44 \ [1.88, 3.00]\) & \(2.46 \ [1.89, 3.04]\) \\
 \end{longtable}
 
 \end{table}
@@ -1434,17 +1444,92 @@ comparison}\label{step-4-item-removal-and-link-function-comparison}
 The four problematic items (Bm\_1\_r through Bm\_4\_r) all concern
 formalist statements about the nature of mathematics (see Appendix B for
 item wording). These items performed well in the large-scale
-international survey from which the instrument was adapted (Tatto,
-2013), suggesting that the poor discrimination observed here reflects a
-cultural mismatch rather than a universal item defect. Chinese
-mathematics teachers may not perceive an emphasis on memorisation and
-procedural fluency as contradicting an emphasis on creativity and
-application, making these formalist items uninformative for
-differentiating teachers along the equity belief continuum in this
-population. Regardless of the explanation, the diagnostic evidence from
-Step 3 provides sufficient grounds for removal: these items contribute
-limited and potentially misleading information to the measurement model.
-After removal, the reduced dataset (\texttt{data\_3}) contains 20 items.
+international survey from which the instrument was adapted (Tatto
+(\citeproc{ref-tatto2013teachea}{2013})), suggesting that the poor
+discrimination observed here reflects a cultural mismatch rather than a
+universal item defect. Chinese mathematics teachers may not perceive an
+emphasis on memorisation and procedural fluency as contradicting an
+emphasis on creativity and application, making these formalist items
+uninformative for differentiating teachers along the equity belief
+continuum in this population. Regardless of the explanation, the
+diagnostic evidence from Step 3 provides sufficient grounds for removal:
+these items contribute limited and potentially misleading information to
+the measurement model. After removal, the reduced dataset
+(\texttt{data\_3}) contains 20 items.
+
+With the four misfitting items removed, thresholds under both
+\texttt{ct\_grsm\_20} and \texttt{bf\_grsm\_20} are now in monotonic
+order. \texttt{ct\_grsm\_20} estimates moderate to strong correlations
+among the three dimensions, with the strongest association between
+mathematics and pedagogy beliefs (\(r = 0.51\), 95\% CrI
+\([0.31, 0.68]\)), suggesting that teachers who view mathematics as a
+creative and applied discipline also tend to be more receptive to
+innovative teaching approaches. \texttt{bf\_grsm\_20} also successfully
+separates a general inclusive belief factor (SD \(= 1.73\), 95\% CrI
+\([0.82, 2.98]\)) from dimension-specific residuals.
+
+\begin{table}
+
+{\caption{{Parameter estimates from the two GRSM models fitted to the
+20-item dataset. Person parameter SDs and correlations are reported for
+the correlated-traits and bi-factor structures respectively. Thresholds
+are population-level intercepts on the adjacent-category logit
+scale.}{\label{tbl-grsm-20-summary}}}
+\vspace{-20pt}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5200}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1400}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2200}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1200}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Parameter
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Estimate
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+95\% CrI
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\hat{R}\)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{\emph{\texttt{ct\_grsm\_20}: Correlated-traits GRSM}} & & & \\
+\textbf{Person parameters} & & & \\
+SD of math belief & \(2.91\) & \([1.36, 4.97]\) & \(1.00\) \\
+SD of learner belief & \(2.09\) & \([0.98, 3.56]\) & \(1.00\) \\
+SD of pedagogy belief & \(2.01\) & \([0.92, 3.44]\) & \(1.00\) \\
+Cor(math, learner) & \(0.28\) & \([0.09, 0.46]\) & \(1.00\) \\
+Cor(math, pedagogy) & \(0.51\) & \([0.31, 0.68]\) & \(1.00\) \\
+Cor(learner, pedagogy) & \(0.45\) & \([0.24, 0.63]\) & \(1.00\) \\
+\textbf{Thresholds} & & & \\
+1: ``disagree'' to ``neutral'' & \(-2.22\) & \([-4.17, -0.79]\) &
+\(1.00\) \\
+2: ``neutral'' to ``agree'' & \(-1.55\) & \([-3.25, -0.33]\) &
+\(1.00\) \\
+3: ``agree'' to ``strongly agree'' & \(4.93\) & \([2.14, 8.88]\) &
+\(1.00\) \\
+& & & \\
+\textbf{\emph{\texttt{bf\_grsm\_20}: Bi-factor GRSM}} & & & \\
+\textbf{Person parameters} & & & \\
+SD of general belief & \(1.73\) & \([0.82, 2.98]\) & \(1.00\) \\
+SD of math-specific belief & \(2.78\) & \([1.34, 4.79]\) & \(1.00\) \\
+SD of learner-specific belief & \(1.85\) & \([0.86, 3.22]\) &
+\(1.00\) \\
+SD of pedagogy-specific belief & \(1.39\) & \([0.53, 2.57]\) &
+\(1.00\) \\
+\textbf{Thresholds} & & & \\
+1: ``disagree'' to ``neutral'' & \(-2.53\) & \([-4.72, -1.00]\) &
+\(1.00\) \\
+2: ``neutral'' to ``agree'' & \(-1.75\) & \([-3.55, -0.41]\) &
+\(1.00\) \\
+3: ``agree'' to ``strongly agree'' & \(5.69\) & \([2.60, 10.17]\) &
+\(1.00\) \\
+\end{longtable}
+
+\end{table}
 
 \subsubsection{Comparing ordinal link
 functions}\label{comparing-ordinal-link-functions}
@@ -1959,27 +2044,23 @@ others in preliminary model comparisons.}
 
 \centering{
 
-\includegraphics[width=0.95\linewidth,height=\textheight,keepaspectratio]{../figures/fig8_workflow.png}
+\includegraphics[width=0.7\linewidth,height=\textheight,keepaspectratio]{../figures/fig8_workflow.png}
 
 }
 
 \end{figure}%
 
-The workflow has also demonstrated adaptability beyond the present case.
-Using a similar framework, we validated a separate instrument measuring
-mathematics teachers' pedagogical practice
-(\citeproc{ref-zhang2025Belief}{Zhang, 2025}). That analysis followed a
-different path: when moving from the RSM to the PCM to free
-item-specific thresholds, the diagnostics revealed that all
-reverse-coded items exhibited abnormal threshold patterns, suggesting
-that the forced shared-threshold structure of the RSM had been masking
-item-level problems. These items were originally designed to capture a
-transmissionist orientation assumed to be the conceptual opposite of the
-instrument's connectionist focus, but their disordered thresholds
-suggest that this binary opposition may not hold in the sampled
-population. That the same workflow framework led to different outcomes
-and different substantive conclusions for a different instrument
-supports its value as a decision framework rather than a fixed recipe.
+Using a similar framework, we also validated a separate instrument
+measuring mathematics teachers' pedagogical practice
+(\citeproc{ref-zhang2025Belief}{Zhang, 2025}). In that case, freeing
+item-specific thresholds via the PCM revealed that all reverse-coded
+items exhibited disordered threshold patterns. These items were designed
+to capture a transmissionist orientation assumed to be the conceptual
+opposite of the instrument's connectionist focus, but their threshold
+behaviour suggests that this binary opposition may not hold in the
+sampled population. The same workflow framework thus led to different
+outcomes and different substantive conclusions for a different
+instrument.
 
 It is important to note that a comprehensive Bayesian workflow can
 encompass more than what we have demonstrated here. Prior predictive
@@ -2042,6 +2123,23 @@ substantive insights that a less thorough analysis might miss.
 
 \newpage
 
+\section{Ethical Statement}\label{ethical-statement}
+
+The Environment, Education and Development School Ethics Review
+Committee at the University of Manchester approved questionnaire
+distribution for this study (Ref: 2024-17321-33604). Participants
+acknowledged their rights and completed all consent checkboxes before
+accessing the questionnaire. Completion and submission of the full
+questionnaire indicated informed consent.
+
+\section{Open Practices Statement}\label{open-practices-statement}
+
+All data (anonymised), analysis code, and model objects are available at
+\url{https://github.com/lukezed/BIRT_tutorial_belief}. None of the
+reported analyses were preregistered.
+
+\newpage
+
 \section{References}\label{references}
 
 \phantomsection\label{refs}
@@ -2086,6 +2184,11 @@ Bürkner, P.-C., \& Vuorre, M. (2019). Ordinal regression models in
 psychology: {A} tutorial. \emph{Advances in Methods and Practices in
 Psychological Science}, \emph{2}(1), 77--101.
 
+\bibitem[\citeproctext]{ref-cai2010highdi}
+Cai, L. (2010). High-dimensional exploratory item factor analysis by a
+metropolis--hastings robbins--monro algorithm. \emph{Psychometrika},
+\emph{75}(1), 33--57. \url{https://doi.org/10.1007/s11336-009-9136-x}
+
 \bibitem[\citeproctext]{ref-carpenter2017stana}
 Carpenter, B., Gelman, A., Hoffman, M. D., Lee, D., Goodrich, B.,
 Betancourt, M., Brubaker, M., Guo, J., Li, P., \& Riddell, A. (2017).
@@ -2098,11 +2201,6 @@ Chalmers, R. P. (2012). {\textbf{Mirt}} : {A Multidimensional Item
 Response Theory Package} for the {\emph{R}} {Environment}. \emph{Journal
 of Statistical Software}, \emph{48}(6).
 \url{https://doi.org/10.18637/jss.v048.i06}
-
-\bibitem[\citeproctext]{ref-chalmers2015exten}
-Chalmers, R. P. (2015). Extended mixed‐effects item response models with
-the {MH-RH} algorithm. \emph{Journal of Educational Measurement},
-\emph{52}(2), 200--222. \url{https://doi.org/10.1111/jedm.12072}
 
 \bibitem[\citeproctext]{ref-chung2020flexmi}
 Chung, S., \& Houts, C. (2020). {flexMIRT}: A flexible modeling package
