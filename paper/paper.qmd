@@ -361,18 +361,18 @@ More importantly for our ongoing diagnostic concern, the threshold anomaly is no
 
 ![Item difficulty (left) and discrimination (right) estimates from the `ct_grsm` (top) and `bf_grsm` (bottom). Discrimination values are shown on the exponentiated scale ($e^\alpha$). The dashed line at 0.5 marks a conventional threshold below which items are considered poor discriminators. \rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}](../figures/fig5_model_comparison.png){#fig-wright-grsm width="95%"}
 
-The discrimination panels unsurprisingly reveal substantially different discrimination values across items, confirming that the equal-discrimination assumption was inappropriate. Most items cluster in a reasonable range, but four items stand out: Bm_1_r, Bm_2_r, Bm_3_r, and Bm_4_r. These four items all belong to the "beliefs about mathematics" subscale and share the same reverse-coded formalist orientation (e.g., "Mathematics is a collection of rules and procedures"). Their discrimination estimates fall well below the conventional $\alpha = 0.5$ threshold for 'poor' items [@embretson2013itema],This indicates that item responses are virtually independent of the measured latent trait: a respondent's location on the latent continuum exerts little to no influence on their probability of selecting a given category. Their difficulty estimates are simultaneously problematic with very wide CrIs, meaning they are poorly identified by the data and nearly all respondents find it easy to endorse the exclusive end. While this problematic pattern was invisible under the RSM. Because the equal-discrimination assumption the poor measurement properties were diluted across the shared parameter structure rather than localised to specific items.
+The discrimination panels unsurprisingly reveal substantially different discrimination values across items, confirming that the equal-discrimination assumption was inappropriate. Most items cluster in a reasonable range, but four items stand out: Bm_1_r, Bm_2_r, Bm_3_r, and Bm_4_r. These four items all belong to the "beliefs about mathematics" subscale and share the same reverse-coded formalist orientation (e.g., "Mathematics is a collection of rules and procedures"). Their discrimination estimates fall well below the conventional $\alpha = 0.5$ threshold for 'poor' items [@embretson2013itema]. This indicates that item responses are virtually independent of the measured latent trait: a respondent's location on the latent continuum exerts little to no influence on their probability of selecting a given category. Their difficulty estimates are simultaneously problematic with very wide CrIs, meaning they are poorly identified by the data and nearly all respondents find it easy to endorse the exclusive end. This pattern was invisible under the RSM, because the equal-discrimination assumption diluted these poor measurement properties across the shared parameter structure rather than localising them to specific items.
 
 \rev{The same conclusion can also be reached through item-fit diagnostics. Applying the Bayesian posterior-predictive infit and outfit, which are closer to the Rasch community's intuition, to the RSM (}\texttt{merge\_rsm}\rev{) under conventional cutoffs returns similar information across the full item set: Bm\_1\_r, Bm\_2\_r, and Bm\_4\_r are again flagged as unacceptable, while Bm\_3\_r survives as acceptable.} \rev{For brevity,} @tbl-itemfit \rev{reports only these four items.}
 
 | Item | Infit MNSQ | Infit *p* | Outfit MNSQ | Outfit *p* |
 |:--|--:|--:|--:|--:|
-| Bm_1_r | 1.34 | .018 | 1.29 | .070 |
-| Bm_2_r | 1.64 | .004 | 1.48 | .046 |
-| Bm_3_r | 1.09 | .230 | 1.17 | .140 |
-| Bm_4_r | 1.38 | .002 | 1.33 | .014 |
+| Bm_1_r | 1.34 | 0.018 | 1.29 | 0.070 |
+| Bm_2_r | 1.64 | 0.004 | 1.48 | 0.046 |
+| Bm_3_r | 1.09 | 0.230 | 1.17 | 0.140 |
+| Bm_4_r | 1.38 | 0.002 | 1.33 | 0.014 |
 
-: Posterior-predictive infit and outfit (mean-square and one-sided posterior predictive *p*) for the four reverse-coded mathematics items, from the full-instrument RSM (`merge_rsm`); the remaining items showed no item-fit anomaly. Under conventional cutoffs (infit mean-square > 1.3, infit *p* < .05), Bm_1_r, Bm_2_r, and Bm_4_r are unacceptable while Bm_3_r is within bounds; outfit is reported for reference. Estimates use 2,000 posterior draws. {#tbl-itemfit}
+: Posterior-predictive infit and outfit (mean-square and one-sided posterior predictive *p*) for the four reverse-coded mathematics items, from the full-instrument RSM (`merge_rsm`); the remaining items showed no item-fit anomaly. Under conventional cutoffs (infit mean-square > 1.3, infit *p* < 0.05), Bm_1_r, Bm_2_r, and Bm_4_r are unacceptable while Bm_3_r is within bounds; outfit is reported for reference. Estimates use 2,000 posterior draws. {#tbl-itemfit}
 
 ## Step 4: Item removal and link function comparison
 
@@ -526,19 +526,19 @@ The three thresholds are now in strictly monotonic order with well-separated cre
 
 Among the person parameters, the math-specific factor has the largest SD ($2.60$), suggesting that after accounting for a shared equity orientation, teachers vary most in their beliefs about the nature of mathematics. The pedagogy-specific factor has the smallest SD ($1.39$), indicating relatively less residual variation in beliefs about teaching approaches. The general factor SD ($1.76$) falls between the two, confirming that all four factors capture meaningful individual differences.
 
-\rev{The reliability of the final model supports the bi-factor specification (}@tbl-reliability\rev{). The total score is highly reliable ($\omega_{\text{total}} = .90$), and most of that reliable variance is carried by the general factor ($\omega_{\text{H}} = .61$, ECV $= .68$). This is precisely the pattern a bi-factor structure implies: the instrument measures a single inclusive-belief construct well, while the domain-specific factors contribute limited reliable variance beyond it. The per-dimension reliabilities follow the same ordering, which is why the instrument is properly scored and interpreted as a whole rather than as independent subscales.}
+\rev{The reliability of the final model supports the bi-factor specification (}@tbl-reliability\rev{). The total score is highly reliable ($\omega_{\text{total}} = 0.90$), and the general factor accounts for most of its reliable variance ($\omega_{\text{H}} = 0.61$, ECV $= 0.68$). Thus, although the domain-specific factors capture meaningful variation in their own right, at the level of the total score the instrument is dominated by a single inclusive-belief construct. The per-dimension person reliabilities are accordingly moderate and weakest for the pedagogy-specific factor, which is why the instrument is properly scored and interpreted as a whole rather than as independent subscales.}
 
 | Quantity | Estimate | 95% interval |
 |:--|--:|:--:|
 | **Total-score reliability** | | |
-| $\omega_{\text{total}}$ | .90 | [.87, .92] |
-| $\omega_{\mathrm{H}}$ (general factor) | .61 | [.48, .72] |
-| ECV (general factor) | .68 | [.55, .79] |
+| $\omega_{\text{total}}$ | 0.90 | [0.87, 0.92] |
+| $\omega_{\mathrm{H}}$ (general factor) | 0.61 | [0.48, 0.72] |
+| ECV (general factor) | 0.68 | [0.55, 0.79] |
 | **Per-dimension reliability (RMU)** | | |
-| General | .61 | [.50, .71] |
-| Mathematics | .62 | [.53, .71] |
-| Learners | .55 | [.44, .66] |
-| Pedagogy | .32 | [.14, .49] |
+| General | 0.61 | [0.50, 0.71] |
+| Mathematics | 0.62 | [0.53, 0.71] |
+| Learners | 0.55 | [0.44, 0.66] |
+| Pedagogy | 0.32 | [0.14, 0.49] |
 
 : Reliability of the final model (`bf_grm_20`), computed over the full posterior. Total-score coefficients are model-based omega [@rodriguez2016evalua]; per-dimension entries are the relative measurement uncertainty (RMU) reliability with its 95% HDCI. {#tbl-reliability}
 
@@ -561,7 +561,7 @@ bf_grm_dif <- brm(
 )
 ```
 
-\rev{In this notation the term after the vertical bar is the grouping factor: by grouping on item, each item carries its own gender (and district) effect that is partially pooled across items, which is what a DIF test requires. The two codings we use differ only in form, not in substance: }\texttt{(0 + gender | item)}\rev{ estimates a separate male and female location per item (jointly bivariate normal), whereas }\texttt{(1 + gender | item)}\rev{ re-expresses the same model as a reference level plus a male-female difference.}
+\rev{In this notation the term after the vertical bar is the grouping factor: grouping on item gives each item its own gender (and district) effect, partially pooled across items, which is what a DIF test requires. The cell-means coding }\texttt{(0 + gender | item)}\rev{ and the equivalent }\texttt{(1 + gender | item)}\rev{ re-express the same bivariate-normal model in two forms: separate male and female levels per item, or a reference level plus a male-female difference.}
 
 \rev{The benefit of the cell-means coding} is that we can directly inspect how males and females perform on each item. However, determining whether the male-female difference is statistically meaningful is less straightforward, because we do not have a single posterior for the difference itself. @bohn2025previc \rev{offers a practical, diagnostic heuristic: flagging an item when its male and female 95\% credible intervals do not overlap, that is, when one interval lies entirely above or below the other. None of the 20 items is flagged on this criterion (Panel A of} @fig-dif\rev{). This is a deliberately conservative screen rather than a formal DIF test: requiring two 95\% credible intervals to be disjoint is a stronger condition than the difference itself being credible, so genuine but smaller differences can be missed.}[^8]
 
