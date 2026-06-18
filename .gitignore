@@ -5,3 +5,13 @@
 .DS_Store
 .quarto
 models/*.rds
+
+# build / render / deploy artifacts (the published HTML lives in docs/)
+analysis.html
+*_files/
+*_cache/
+*.utf8.md
+*.knit.md
+
+# local revision working folder (response letters, drafts, etc.)
+revision/

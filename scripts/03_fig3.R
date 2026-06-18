@@ -1,8 +1,8 @@
 # scripts/03_fig3.R
 
-source("scripts/00_packages.R")
+source(here::here("scripts", "00_packages.R"))
 
-data_1 <- readRDS("data/processed/data_1.rds")
+data_1 <- readRDS(here("data", "processed", "data_1.rds"))
 
 plot_data <- data_1 %>%
   mutate(
@@ -67,7 +67,7 @@ fig_3 <- ggplot(plot_data, aes(x = response, y = percentage, fill = dimension)) 
   )
 
 ggsave(
-  filename = "figures/fig3_response_distribution.png", 
+  filename = here("figures", "fig3_response_distribution.png"), 
   plot = fig_3, 
   width = 6.5, 
   height = 4, 

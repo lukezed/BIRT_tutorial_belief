@@ -65,6 +65,8 @@ header-includes:
   - \makeatletter
   - \@ifundefined{cslhangindent}{\newlength{\cslhangindent}}{}
   - \makeatother
+  - \definecolor{revcol}{HTML}{1A1AFF}  % vivid blue; swap hex to taste (e.g. C2185B magenta)
+  - \newcommand{\rev}[1]{\textbf{\textcolor{revcol}{#1}}}  % bold + colour; set to {#1} to remove all marking
 ---
 
 # Introduction
@@ -93,9 +95,13 @@ $$
 p(\theta_p, \xi_i, \alpha_i | \mathbf{y}) \propto p(\mathbf{y} | \theta_p, \xi_i, \alpha_i) \, p(\theta_p, \xi_i, \alpha_i)
 $$ {#eq-bayes-irt}
 
-Here $p(\mathbf{y} | \theta_p, \xi_i, \alpha_i)$ is the IRT likelihood, that is, the product of item response probabilities across all persons and items as determined by the specific model and its link function (see @apx-models for detailed specifications). The prior $p(\theta_p, \xi_i, \alpha_i)$ encodes beliefs about plausible parameter ranges. In practice, weakly informative priors are standard: for example, $\mathcal{N}(0, 3)$ for person and item parameters constrains estimates to a reasonable range on the logit scale without imposing substantive assumptions, while providing sufficient regularisation to stabilise estimation [@burkner2021bayesi; @mcelreath2018statisa]. The posterior distribution is then characterised via Markov chain Monte Carlo (MCMC) sampling, yielding draws from the joint distribution of all parameters rather than point estimates.
+Here $p(\mathbf{y} | \theta_p, \xi_i, \alpha_i)$ is the IRT likelihood, that is, the product of item response probabilities across all persons and items as determined by the specific model and its link function (see @apx-models for detailed specifications). The prior $p(\theta_p, \xi_i, \alpha_i)$ encodes beliefs about plausible parameter ranges. In practice, weakly informative priors are standard: for example, $\mathcal{N}(0, 3)$ for person and item parameters constrains estimates to a reasonable range on the logit scale without imposing substantive assumptions, while providing sufficient regularisation to stabilise estimation [@burkner2021bayesi; @mcelreath2018statisa]. The posterior distribution is then characterised via Markov chain Monte Carlo (MCMC) sampling, yielding draws from the joint distribution of all parameters rather than point estimates. \rev{MCMC is the most common but not the only option: brms also supports faster approximate alternatives such as variational inference, useful for very large samples where full MCMC becomes computationally demanding.}[^va]
 
-This regularisation is particularly effective for the highly parameterised models that frequentist methods struggle with most. Frequentist MIRT depends on integrating over the latent trait distribution within the marginal likelihood $p(\mathbf{y})$, a procedure that demands large samples for numerical stability. When data are insufficient, frequentist software may fail to converge or produce boundary estimates. Even with adequate samples, multidimensional models require integration over the latent trait distribution that scales exponentially with dimensionality, forcing frequentist implementations such as `mirt` [@chalmers2012mirt] to rely on the MH-RM algorithm[^MHRM], which uses Metropolis-Hastings sampling to approximate the intractable integrals. Frequentist MIRT thus borrows Bayesian computational machinery while remaining within a frequentist estimation framework. By contrast, Bayesian IRT employs MCMC natively and, through the prior $p(\theta_p, \xi_i, \alpha_i)$, stabilises precisely those parameters that are most data-starved. The advantages are now well documented: @fujimoto2020genera established a general Bayesian MIRT framework encompassing bi-factor and other complex structures, demonstrating robust performance on an empirical dataset of only $N = 121$; @konig2022robust showed that a hierarchical Bayesian two-parameter logistic model with appropriately specified weakly informative priors can produce unbiased item and person parameter estimates even with $N < 100$. More broadly, Bayesian estimation outperforms MML for multidimensional IRT at moderate sample sizes and is particularly beneficial when response categories are sparsely endorsed [@bainter2019impact; @padgett2024regula], a common occurrence in Likert-scale instruments where extreme categories receive few responses.
+[^va]: \rev{Hamiltonian Monte Carlo, the MCMC variant used here, is accurate but computationally intensive: sampling time grows with both sample size and model complexity. For large datasets, variational inference offers a faster if approximate alternative} [@kucukelbir2017automa].
+
+This regularisation is particularly effective for the highly parameterised models that frequentist methods struggle with most. Frequentist MIRT depends on integrating over the latent trait distribution within the marginal likelihood $p(\mathbf{y})$, a procedure that demands large samples for numerical stability. When data are insufficient, frequentist software may fail to converge or produce boundary estimates. Even with adequate samples, multidimensional models require integration over the latent trait distribution that scales exponentially with dimensionality, forcing frequentist implementations such as `mirt` [@chalmers2012mirt] to rely on the MH-RM algorithm[^MHRM], which uses Metropolis-Hastings sampling to approximate the intractable integrals. Frequentist MIRT thus borrows Bayesian computational machinery while remaining within a frequentist estimation framework. By contrast, Bayesian IRT employs MCMC natively and, through the prior $p(\theta_p, \xi_i, \alpha_i)$, stabilises precisely those parameters that are most data-starved. The advantages are now well documented: @fujimoto2020genera established a general Bayesian MIRT framework encompassing bi-factor and other complex structures, demonstrating robust performance on an empirical dataset of only $N = 121$; @konig2022robust showed that a hierarchical Bayesian two-parameter logistic model with appropriately specified weakly informative priors \rev{can recover item parameters with little bias even with $N < 100$, while person estimates remain stable under partial pooling.}[^shrink] More broadly, Bayesian estimation outperforms MML for multidimensional IRT at moderate sample sizes and is particularly beneficial when response categories are sparsely endorsed [@bainter2019impact; @padgett2024regula], a common occurrence in Likert-scale instruments where extreme categories receive few responses.
+
+[^shrink]: \rev{Person estimates from hierarchical models are partially pooled toward the population mean, so individual estimates carry some shrinkage bias. This is a deliberate feature of multilevel estimation: it trades a small bias for substantially reduced variance and preserves the relative ordering of persons, which is the primary target of measurement} [@levy2016bayesi].
 
 [^MHRM]: Metropolis-Hastings Robbins-Monro [@cai2010highdi].
 
@@ -106,7 +112,10 @@ Beyond outperforming frequentist methods in small samples, Bayesian IRT addresse
 
 @deboeck2004explan demonstrated that IRT models can be estimated within a generalised linear mixed model (GLMM) framework. The R package `brms` [@burkner2017brmsb], which has become a widely used platform for Bayesian multilevel modelling, builds on this equivalence. It calls `Stan` [@carpenter2017stana] as its backend for Hamiltonian Monte Carlo sampling, enabling efficient exploration of the high-dimensional parameter spaces characteristic of multidimensional IRT.
 
-The GLMM-based approach as implemented in brms does have known limitations. Most notably, `brms` does not support jointly specifying latent variables within the model formula, which means that certain complex modelling strategies, such as the explanatory multidimensional IRT framework of @kleinsasser2024person where person-level regression models are estimated simultaneously within the IRT likelihood, are not currently specifiable. Nevertheless, for the class of models covered in this tutorial, `brms` offers a compelling combination of one-stop integration and concise, transferable syntax. Within a single formula interface, researchers can specify multiple ordinal model families (cumulative and adjacent-category links), multidimensional structures (correlated-traits and bi-factor), item-specific discrimination via distributional regression, covariates, and differential item functioning, all with built-in model comparison through approximate leave-one-out cross-validation [@vehtari2017practia].
+The GLMM-based approach as implemented in brms does have known limitations. Most notably, `brms` does not support jointly specifying latent variables within the model formula, which means that certain complex modelling strategies, such as the explanatory multidimensional IRT framework of @kleinsasser2024person where person-level regression models are estimated simultaneously within the IRT likelihood, are not currently specifiable. \rev{This limitation concerns \emph{jointly modelled latent regressions}; correlations among the latent traits themselves are fully supported through the random-effect covariance structure and are used for the correlated-traits model below. Ongoing \texttt{brms} development is expanding its latent-variable functionality.}[^brms3] Nevertheless, for the class of models covered in this tutorial, `brms` offers a compelling combination of one-stop integration and concise, transferable syntax. Within a single formula interface, researchers can specify multiple ordinal model families (cumulative and adjacent-category links), multidimensional structures (correlated-traits and bi-factor), item-specific discrimination via distributional regression, covariates, and differential item functioning, all with built-in model comparison through approximate leave-one-out cross-validation [@vehtari2017practia].
+
+[^brms3]: \rev{See, e.g., the planned latent-variable features discussed at} \url{https://github.com/paul-buerkner/brms/issues/304}.
+
 
 Bayesian MIRT can also be implemented by writing custom likelihoods directly in `Stan` [@carpenter2017stana; @luo2018usinga] or in JAGS/BUGS [@plummer2003jags; @lunn2000winbug; @curtis2010bugs]. These alternatives offer greater modelling flexibility, but their syntax typically presents a substantial technical barrier for applied researchers in education and psychology. Among frequentist IRT packages, `mirt` [@chalmers2012mirt], `TAM` [@robitzsch2013tam], and `flexMIRT` [@chung2020flexmi] each support specific model classes, but most do not provide the full Bayesian estimation and diagnostic infrastructure needed for the iterative workflow demonstrated here. For a detailed comparison of `brms` with these alternatives, see @burkner2021bayesi.
 
@@ -114,7 +123,7 @@ Bayesian MIRT can also be implemented by writing custom likelihoods directly in 
 
 We will briefly introduce the ordinal IRT models and dimensional structures used in this tutorial, alongside the related work that informs our approach.
 
-The most constrained yet concise ordinal IRT model used in this paper is the rating scale model [RSM, @andrich1978rating], which uses an adjacent-category logit link and assumes that all items share both the same set of thresholds and the same discrimination ($\alpha = 1$). Relaxing the threshold constraint so that each item has its own threshold spacing yields the partial credit model [PCM, @masters1982rasch]. Both the RSM and PCM are one-parameter models in the Rasch family, where discrimination is constrained to be equal across items. Introducing item-specific discrimination produces their two-parameter generalised counterparts: the GRSM and GPCM, respectively. Another widely used two-parameter model is the graded response model [GRM, @samejima1969estima], the polytomous extension of the two-parameter logistic model (2PL) for ordered categories, which differs from the adjacent-category family in its use of a cumulative logit link: rather than modelling the odds of each category relative to its neighbour, the GRM models the cumulative probability $P(Y \geq c)$ of responding at or above each threshold.[^3] @burkner2019ordina provide a detailed treatment of the distinction between adjacent-category and cumulative link functions, demonstrating that the two families can produce substantively different parameter estimates and model fit for the same data. @burkner2021bayesi further shows how all of these models can be specified in `brms` using its distributional regression syntax, where discrimination is introduced via `disc ~ 1 + (1 | item)` and the link function is controlled through the family argument. Importantly, freeing discrimination is not merely a matter of model flexibility: as we demonstrate in the workflow, it also serves a diagnostic purpose, revealing which items contribute meaningful information and whether threshold anomalies arise from model constraints rather than data problems.
+The most constrained yet concise ordinal IRT model used in this paper is the rating scale model [RSM, @andrich1978rating], which uses an adjacent-category logit link and assumes that all items share both the same set of thresholds and the same discrimination ($\alpha = 1$). Relaxing the threshold constraint so that each item has its own threshold spacing yields the partial credit model [PCM, @masters1982rasch]. Both the RSM and PCM are one-parameter models in the Rasch family, where discrimination is constrained to be equal across items. Introducing item-specific discrimination produces their two-parameter generalised counterparts: the GRSM and GPCM, respectively. Another widely used two-parameter model is the graded response model [GRM, @samejima1969estima], the polytomous extension of the two-parameter logistic model (2PL) for ordered categories, which differs from the adjacent-category family in its use of a cumulative logit link: rather than modelling the odds of each category relative to its neighbour, the GRM models the cumulative probability $P(Y \geq c)$ of responding at or above each threshold.[^3] @burkner2019ordina provide a detailed treatment of the distinction between adjacent-category and cumulative link functions, demonstrating that the two families can produce substantively different parameter estimates and model fit for the same data. @burkner2021bayesi further shows how all of these models can be specified in `brms` using its distributional regression syntax, where discrimination is introduced via `disc ~ 1 + (1 | item)` and the link function is controlled through the family argument. \rev{This follows the standard brms parameterisation, in which item discriminations are modelled as a by-item random effect and thus partially pooled toward a common mean, rather than estimated as unpooled fixed parameters; in small samples this regularises the estimates at the cost of mild shrinkage.} Importantly, freeing discrimination is not merely a matter of model flexibility: as we demonstrate in the workflow, it also serves a diagnostic purpose, revealing which items contribute meaningful information and whether threshold anomalies arise from model constraints rather than data problems.
 
 [^3]: In its original formulation [@samejima1969estima], the GRM estimates item-specific thresholds. The implementation used in this tutorial is a constrained variant in which threshold spacing is shared across items, with item differences captured through a location parameter that shifts all thresholds equally. See @apx-models for details.
 
@@ -134,7 +143,7 @@ This section briefly introduces the diagnostic tools used throughout the workflo
 
 Satisfactory convergence of the MCMC sampler is a prerequisite for interpreting any Bayesian model output. We assess convergence using the split-chain $\hat{R}$ statistic [@vehtari2021ranknoa], with values below 1.01 required for all parameters, alongside the effective sample size (ESS), for which a minimum of 400 total draws is recommended [@vehtari2021ranknoa]. The presence of divergent transitions, which signal regions of the posterior geometry that the sampler fails to explore, is also monitored.
 
-Although all models reported in this tutorial met these convergence criteria after tuning, reaching convergence for complex multidimensional models required iterative adjustment. In practice, we found it useful to begin with short runs (e.g., 500 iterations) to verify that a model specification is viable before committing to full sampling. When convergence issues arose, typically with the more highly parameterised models, they were resolved by increasing `adapt_delta` (reducing the step size of the Hamiltonian Monte Carlo integrator, at the cost of slower sampling) and `max_treedepth` (allowing deeper trajectory exploration per transition). Persistent convergence failure after such adjustments generally indicates a specification problem rather than a tuning problem. For the more computationally demanding models, we used `cmdstanr` [@gabry2025cmdsta] as the backend in place of the default `rstan`, which provided substantial speed improvements; all code, including backend configuration, is available in the companion repository.
+Although all models reported in this tutorial met these convergence criteria after tuning, reaching convergence for complex multidimensional models required iterative adjustment. In practice, we found it useful to begin with short runs (e.g., 500 iterations) to verify that a model specification is viable before committing to full sampling. When convergence issues arose, typically with the more highly parameterised models, they were resolved by increasing `adapt_delta` (reducing the step size of the Hamiltonian Monte Carlo integrator, at the cost of slower sampling) and `max_treedepth` (allowing deeper trajectory exploration per transition). Persistent convergence failure after such adjustments generally indicates a specification problem rather than a tuning problem. For the more computationally demanding models, we used `cmdstanr` [@gabry2025cmdsta] as the backend in place of the default `rstan`, which provided substantial speed improvements. \rev{Within-chain parallelisation via \texttt{threads = threading()} provides further speed-ups on the most demanding models.} All code, including backend configuration, is available in the companion repository.
 
 ## Model comparison: LOO-CV
 
@@ -144,17 +153,21 @@ The reliability of the PSIS-LOO approximation is monitored through Pareto $\hat{
 
 We recommend that Pareto $\hat{k}$ diagnostics be reported alongside ELPD differences as a matter of practice: a model with the best ELPD but many problematic $\hat{k}$ values may be a less trustworthy choice than a slightly worse-fitting model with clean diagnostics.
 
+\rev{As a complementary cue for model selection, we also report the LOO-based stacking weights} [@yao2018using]\rev{: a model that receives almost all of the weight corroborates its selection. We use these weights only as supporting evidence alongside the ELPD differences, not to form a combined model.}
+
 An important scope condition applies throughout: LOO-CV is only valid for comparing models fitted to the same set of observations with the same response variable. This constraint is relevant at several points in the workflow. When response categories are collapsed, the response variable changes and ELPD values from before and after collapsing are not comparable. Similarly, when items are removed, the observation set changes and ELPD values across different item sets cannot be directly compared. At these decision points, the workflow relies on parameter-level diagnostics.
 
 ## Item and person parameter visualisations
 
-Throughout this tutorial, we use composite diagnostic plots that display item difficulty and discrimination estimates alongside person ability estimates, all with 95% credible intervals. We refer to these as "Wright maps" by loose convention, following the logic of the traditional Wright map [@wright1979best; @wilson2023constr] to jointly display item and person parameters on scale. Based on @burkner2021bayesi, our versions differ from the traditional format in layout (side-by-side panels rather than a single vertical axis) and in the inclusion of discrimination estimates as a separate panel. The credible intervals are a distinctly Bayesian addition that makes parameter-level uncertainty directly visible.
+Throughout this tutorial, we use composite diagnostic plots that display item difficulty and discrimination estimates alongside person ability estimates, all with 95% credible intervals. We refer to these as "Wright maps" by loose convention, following the logic of the traditional Wright map [@wright1979best; @wilson2023constr] to jointly display item and person parameters on scale. Based on @burkner2021bayesi, our versions differ from the traditional format in layout (side-by-side panels rather than a single vertical axis) and in the inclusion of discrimination estimates as a separate panel. \rev{The credible intervals of the posterior make parameter-level uncertainty directly visible.}
 
 In terms of diagnostic interpretation, item difficulty does not lend itself to a strict cutoff criterion. What matters is that items are distributed across a reasonably continuous range of the latent continuum and that this range provides adequate coverage of the person ability distribution. Problematic items typically manifest as outlying difficulty values accompanied by excessively wide credible intervals, indicating that the data provide limited information for estimating those items' locations; examples of this pattern will be encountered in the workflow. For discrimination, we adopt the conventional threshold of $\alpha < 0.5$ following @embretson2013itema, below which an item is considered a poor discriminator. In substantive terms, this means that responses to such an item are largely independent of the latent trait and the item contributes minimal measurement information.
 
-It is worth noting that classical item-fit statistics (e.g., infit, outfit, $S$-$X^2$) do not have a direct Bayesian counterpart. @bohn2025previc propose an approach in which fit statistics are computed separately for each posterior draw and then aggregated, but our replication of their method found that this requires substantial computational resources and produces results nearly identical to those obtained from standard frequentist item-fit routines (e.g., using `TAM` package).[^4] A more natively Bayesian approach to item-level diagnostics is prior/posterior predictive checking (ppc), as demonstrated by @winter2025tutoria using prior/posterior predictive $p$-values (ppp). We do not incorporate posterior predictive item checks in this tutorial, though they represent a valuable extension.
+\rev{Classical item-fit statistics (e.g., infit, outfit, $S$-$X^2$) originate in the Rasch tradition, but they are not inherently frequentist: they also have posterior-predictive Bayesian forms.} @bohn2025previc \rev{compute such statistics for each posterior draw and aggregate them, and the \texttt{easyRaschBayes} package} [@johansson2026easyra] \rev{implements posterior-predictive infit/outfit directly for \texttt{brms} models, summarising item fit through posterior predictive $p$-values (ppp). These are a special case of the broader posterior predictive checking (ppc) approach to item-level diagnostics} [@winter2025tutoria]. \rev{We use posterior-predictive infit/outfit as a complementary cross-check when freeing discrimination (Step 3).}
 
-[^4]: A replication and optimisation of the @bohn2025previc item-fit approach is available at <https://github.com/lukezed/previc-optimization-demo>.
+
+## \rev{Reliability}
+\rev{For the final model we summarise measurement precision with reliability coefficients. Because the instrument is multidimensional, no single latent dimension is meant to carry the measurement alone, so we report two complementary views. Model-based omega coefficients} [@rodriguez2016evalua; @mcdonald2013test] \rev{describe the total score: $\omega_{\text{total}}$ is the proportion of total-score variance that is true-score (common) variance, while $\omega_{\text{H}}$ and the explained common variance (ECV) quantify how much of that is attributable to the general factor. Separately, the per-dimension reliability of the person estimates, computed through the relative measurement uncertainty (RMU) of} @bignardi2025genera\rev{, indexes how precisely individuals can be placed on each latent dimension; under partial pooling at small samples these are conservative lower bounds. Together they separate the reliability of the instrument as a whole from the precision of any single subscale. All coefficients are computed over the full posterior, yielding credible intervals.}
 
 ## Differential item functioning
 
@@ -227,7 +240,7 @@ All models were fitted in R using the brms package [@burkner2017brmsb], which in
 
 We begin by inspecting the observed response distributions. @fig-response-dist shows the item-level frequency distributions across the original 5-point scale.
 
-![Item-level response distributions across the original 5-point scale, coloured by subscale dimension.](../figures/fig3_response_distribution.png){#fig-response-dist width="95%"}
+![Item-level response distributions across the original 5-point scale, coloured by subscale dimension. \rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}](../figures/fig3_response_distribution.png){#fig-response-dist width="95%"}
 
 A small number of respondents answered only the first few items and left all remaining items blank, likely reflecting disengagement. Because IRT models use full information likelihood, each response contributes independently to estimation regardless of whether the respondent completed the full instrument, so these cases were retained without special treatment.
 
@@ -276,7 +289,7 @@ ranef$id[, , "Intercept"] %>%
 
 The item difficulty map (@fig-wright-map-rsm) shows a satisfactory distribution of difficulties across the latent continuum, with reasonably sized credible intervals and no abnormally wide estimates. The person ability distribution is approximately normal, though a handful of respondents exhibit very wide credible intervals, likely reflecting the inconsistent response patterns noted earlier. Overall, item-person targeting appears adequate.
 
-![Wright map from `merge_rsm`. Left: item difficulty estimates with 95% CrIs. Right: person ability estimates sorted by magnitude.](../figures/fig4_wright_map.png){#fig-wright-map-rsm width="95%"}
+![Wright map from `merge_rsm`. Left: item difficulty estimates with 95% CrIs. Right: person ability estimates sorted by magnitude. \rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}](../figures/fig4_wright_map.png){#fig-wright-map-rsm width="95%"}
 
 The threshold reversal however persists. Thresholds 1 ($-0.40$, CrI $[-0.91, 0.1]$) and 2 ($-0.56$, CrI $[-1.06, -0.06]$) of `merge_rsm` remain in reversed order with heavily overlapping credible intervals, confirming that the anomaly was not attributable to category sparsity alone. It is worth recalling that the RSM imposes several strong assumptions simultaneously: it assumes a single underlying construct, constrains all items to share the same set of thresholds, and fixes discrimination to be equal across items. When any of these assumptions is violated in data structure, the shared threshold structure is forced into a compromise that can compress or reverse threshold spacing. The persisting reversal may therefore reflect a more complex dimensionality than the unidimensional model assumes, or it may indicate that certain items discriminate poorly under a constrained equal-discrimination specification, or both. We address these possibilities in turn: Step 2 examines whether a multidimensional structure better accounts for the data, and Step 3 investigates whether freeing item-level discrimination parameters resolves the remaining threshold disorder.
 
@@ -346,9 +359,20 @@ More importantly for our ongoing diagnostic concern, the threshold anomaly is no
 
 @fig-wright-grsm shows the difficulty and discrimination estimates for both `ct_grsm` (top row) and `bf_grsm` (bottom row).
 
-![Item difficulty (left) and discrimination (right) estimates from the `ct_grsm` (top) and `bf_grsm` (bottom). Discrimination values are shown on the exponentiated scale ($e^\alpha$). The dashed line at 0.5 marks a conventional threshold below which items are considered poor discriminators.](../figures/fig5_model_comparison.png){#fig-wright-grsm width="95%"}
+![Item difficulty (left) and discrimination (right) estimates from the `ct_grsm` (top) and `bf_grsm` (bottom). Discrimination values are shown on the exponentiated scale ($e^\alpha$). The dashed line at 0.5 marks a conventional threshold below which items are considered poor discriminators. \rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}](../figures/fig5_model_comparison.png){#fig-wright-grsm width="95%"}
 
 The discrimination panels unsurprisingly reveal substantially different discrimination values across items, confirming that the equal-discrimination assumption was inappropriate. Most items cluster in a reasonable range, but four items stand out: Bm_1_r, Bm_2_r, Bm_3_r, and Bm_4_r. These four items all belong to the "beliefs about mathematics" subscale and share the same reverse-coded formalist orientation (e.g., "Mathematics is a collection of rules and procedures"). Their discrimination estimates fall well below the conventional $\alpha = 0.5$ threshold for 'poor' items [@embretson2013itema],This indicates that item responses are virtually independent of the measured latent trait: a respondent's location on the latent continuum exerts little to no influence on their probability of selecting a given category. Their difficulty estimates are simultaneously problematic with very wide CrIs, meaning they are poorly identified by the data and nearly all respondents find it easy to endorse the exclusive end. While this problematic pattern was invisible under the RSM. Because the equal-discrimination assumption the poor measurement properties were diluted across the shared parameter structure rather than localised to specific items.
+
+\rev{The same conclusion can also be reached through item-fit diagnostics. Applying the Bayesian posterior-predictive infit and outfit, which are closer to the Rasch community's intuition, to the RSM (}\texttt{merge\_rsm}\rev{) under conventional cutoffs returns similar information across the full item set: Bm\_1\_r, Bm\_2\_r, and Bm\_4\_r are again flagged as unacceptable, while Bm\_3\_r survives as acceptable.} \rev{For brevity,} @tbl-itemfit \rev{reports only these four items.}
+
+| Item | Infit MNSQ | Infit *p* | Outfit MNSQ | Outfit *p* |
+|:--|--:|--:|--:|--:|
+| Bm_1_r | 1.34 | .018 | 1.29 | .070 |
+| Bm_2_r | 1.64 | .004 | 1.48 | .046 |
+| Bm_3_r | 1.09 | .230 | 1.17 | .140 |
+| Bm_4_r | 1.38 | .002 | 1.33 | .014 |
+
+: Posterior-predictive infit and outfit (mean-square and one-sided posterior predictive *p*) for the four reverse-coded mathematics items, from the full-instrument RSM (`merge_rsm`); the remaining items showed no item-fit anomaly. Under conventional cutoffs (infit mean-square > 1.3, infit *p* < .05), Bm_1_r, Bm_2_r, and Bm_4_r are unacceptable while Bm_3_r is within bounds; outfit is reported for reference. Estimates use 2,000 posterior draws. {#tbl-itemfit}
 
 ## Step 4: Item removal and link function comparison
 
@@ -474,7 +498,7 @@ loo_model_weights(list(bf_grm = loo_bf_grm_20, ct_grm = loo_ct_grm_20))
 
 The calibrated comparison shows that the two GRM models are practically indistinguishable in predictive accuracy, but `bf_grm_20` receives 100% of the stacking weight. @fig-final-diag presents the Wright map for `bf_grm_20`. The top row shows item difficulty and discrimination estimates for the 20 retained items. The bottom four panels display the person parameter estimates for the general belief factor and the three dimension-specific residual factors (mathematics, learners, pedagogy), all plotted on a common scale.
 
-![Diagnostic Wright map for the final model (`bf_grm_20`). Top left: item difficulty with 95% CrIs. Top right: item discrimination (exponentiated scale). Bottom panels: person parameter estimates for the general factor and three dimension-specific factors, sorted by magnitude.](../figures/fig6_final_diagnostics.png){#fig-final-diag width="95%"}
+![Diagnostic Wright map for the final model (`bf_grm_20`). Top left: item difficulty with 95% CrIs. Top right: item discrimination (exponentiated scale). Bottom panels: person parameter estimates for the general factor and three dimension-specific factors, sorted by magnitude. \rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}](../figures/fig6_final_diagnostics.png){#fig-final-diag width="95%"}
 
 The item difficulty panel shows a well-distributed spread across the latent continuum with no abnormally wide credible intervals, confirming that the removal of the four misfitting items resolved the identification problems observed in Step 3. Discrimination values for the retained items are all above the $\alpha = 0.5$ threshold. The person parameter panels show approximately normal distributions for all four factors, with the general factor exhibiting the widest spread, consistent with its role as the dominant source of shared variance.
 
@@ -502,6 +526,22 @@ The three thresholds are now in strictly monotonic order with well-separated cre
 
 Among the person parameters, the math-specific factor has the largest SD ($2.60$), suggesting that after accounting for a shared equity orientation, teachers vary most in their beliefs about the nature of mathematics. The pedagogy-specific factor has the smallest SD ($1.39$), indicating relatively less residual variation in beliefs about teaching approaches. The general factor SD ($1.76$) falls between the two, confirming that all four factors capture meaningful individual differences.
 
+\rev{The reliability of the final model supports the bi-factor specification (}@tbl-reliability\rev{). The total score is highly reliable ($\omega_{\text{total}} = .90$), and most of that reliable variance is carried by the general factor ($\omega_{\text{H}} = .61$, ECV $= .68$). This is precisely the pattern a bi-factor structure implies: the instrument measures a single inclusive-belief construct well, while the domain-specific factors contribute limited reliable variance beyond it. The per-dimension reliabilities follow the same ordering, which is why the instrument is properly scored and interpreted as a whole rather than as independent subscales.}
+
+| Quantity | Estimate | 95% interval |
+|:--|--:|:--:|
+| **Total-score reliability** | | |
+| $\omega_{\text{total}}$ | .90 | [.87, .92] |
+| $\omega_{\mathrm{H}}$ (general factor) | .61 | [.48, .72] |
+| ECV (general factor) | .68 | [.55, .79] |
+| **Per-dimension reliability (RMU)** | | |
+| General | .61 | [.50, .71] |
+| Mathematics | .62 | [.53, .71] |
+| Learners | .55 | [.44, .66] |
+| Pedagogy | .32 | [.14, .49] |
+
+: Reliability of the final model (`bf_grm_20`), computed over the full posterior. Total-score coefficients are model-based omega [@rodriguez2016evalua]; per-dimension entries are the relative measurement uncertainty (RMU) reliability with its 95% HDCI. {#tbl-reliability}
+
 ## Step 5: Differential item functioning and covariates
 
 Finally, we conduct a DIF analysis on the selected model to ensure that items function consistently across demographic subgroups, a property known as measurement invariance. When an item exhibits differential item functioning (DIF), respondents from different groups who share the same level of the latent trait have systematically different probabilities of endorsing a given category, which can bias group comparisons.
@@ -521,7 +561,9 @@ bf_grm_dif <- brm(
 )
 ```
 
-The benefit of this parameterisation is that we can directly inspect how males and females perform on each item. However, determining whether the male-female difference is statistically meaningful is less straightforward, because we do not have a single posterior for the difference itself. @bohn2025previc offers an engineering-level approximation: treating DIF as a diagnostic question and flagging items where the male and female posteriors are non-overlapping. Panel A of @fig-dif shows diagnostic for all 20 items based on this standard, and all items pass the DIF test. It should be noted, however, that this is an overly optimistic diagnostic: even when two posterior distributions overlap, the difference between them can still be credible.[^8]
+\rev{In this notation the term after the vertical bar is the grouping factor: by grouping on item, each item carries its own gender (and district) effect that is partially pooled across items, which is what a DIF test requires. The two codings we use differ only in form, not in substance: }\texttt{(0 + gender | item)}\rev{ estimates a separate male and female location per item (jointly bivariate normal), whereas }\texttt{(1 + gender | item)}\rev{ re-expresses the same model as a reference level plus a male-female difference.}
+
+\rev{The benefit of the cell-means coding} is that we can directly inspect how males and females perform on each item. However, determining whether the male-female difference is statistically meaningful is less straightforward, because we do not have a single posterior for the difference itself. @bohn2025previc \rev{offers a practical, diagnostic heuristic: flagging an item when its male and female 95\% credible intervals do not overlap, that is, when one interval lies entirely above or below the other. None of the 20 items is flagged on this criterion (Panel A of} @fig-dif\rev{). This is a deliberately conservative screen rather than a formal DIF test: requiring two 95\% credible intervals to be disjoint is a stronger condition than the difference itself being credible, so genuine but smaller differences can be missed.}[^8]
 
 [^8]: This is analogous to a situation in frequentist inference where two confidence intervals overlap but the difference between the two means can be nonetheless statistically significant.
 
@@ -544,7 +586,7 @@ bf_grm_dif2 <- brm(
 
 @fig-dif presents the item-level DIF results. Panel A shows the posterior overlap diagnostic from `bf_grm_dif`, and Panel B shows the item-level gender DIF effects (log-odds difference, male minus female) from `bf_grm_dif2`; all 20 items have 95% CrIs that include zero. Panel C shows the district DIF effects (Districts 2 and 3 relative to District 1), and again no item exhibits a credible DIF effect. The instrument thus appears to function consistently across gender and district subgroups.
 
-![Differential item functioning and covariate analysis. Panel A: posterior overlap diagnostic for gender `bf_grm_dif`. Panel B: item-level gender DIF effects from `bf_grm_dif2`. Panel C: item-level district DIF effects. Panel D: Estimated category response probabilities by district.](../figures/fig7_combined_dif.png){#fig-dif width="95%"}
+![Differential item functioning and covariate analysis. Panel A: posterior overlap diagnostic for gender `bf_grm_dif`. Panel B: item-level gender DIF effects from `bf_grm_dif2`. Panel C: item-level district DIF effects. Panel D: Estimated category response probabilities by district. \rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}](../figures/fig7_combined_dif.png){#fig-dif width="95%"}
 
 @tbl-dif-summary reports the population-level parameter estimates from both DIF models. Because covariates are included directly in the measurement model, group-level effects are estimated simultaneously alongside the item-level DIF tests. The gender effect is credible in both specifications: male teachers hold less inclusive beliefs ($-0.86$, 95% CrI $[-1.99, -0.02]$ in `bf_grm_dif`; $-1.20$, 95% CrI $[-2.62, -0.04]$ in `bf_grm_dif2`). The consistency of this effect across two differently parameterised models strengthens the finding. The district effect for District 3, while its 95% CrI narrowly overlaps zero ($-1.29$, 95% CrI $[-2.89, 0.03]$), is nonetheless noteworthy: the vast majority of the posterior lies below zero, indicating a strong tendency toward less inclusive beliefs among teachers in lower-SES districts. As visualised in Panel D of @fig-dif, this manifests in a systematic shift toward lower response categories.
 
@@ -761,6 +803,78 @@ Weakly informative priors are used throughout, following recommendations in Bür
 | Correlation matrix (CT-MIRT) | $\text{LKJ}(2)$ | Mildly favours smaller correlations; $\eta > 1$ concentrates density near the identity matrix. |
 
 : Prior distributions for all model parameters. {#tbl-priors tbl-colwidths="\[35,20,45\]"}
+
+\normalsize
+
+## brms code for all fitted models
+
+For quick reference, the listing below gives the brms specification of every model fitted in this study. It is deliberately minimal: the `bf()` model formulas, then the `brm()` calls whose `family` and `data` arguments set the models apart (the `family` chooses the link / threshold form, as in @tbl-models). Priors are weakly informative as in @tbl-priors; computational settings (chains, iterations, `adapt_delta`, backend, etc.) are omitted. Complete runnable code is in the companion repository.
+
+\small
+
+```r
+# Model formulas (random effects encode the dimensional structure)
+
+# Unidimensional
+bf_uni <- bf(response ~ 1 + (1 | item) + (1 | id))
+
+# Correlated-traits MIRT (three correlated dimensions)
+bf_ct <- bf(response ~ 1 + (1 | item) + (0 + dim_m + dim_l + dim_p | id))
+
+# Bi-factor MIRT (general factor + orthogonal specific factors)
+bf_bf <- bf(
+  response ~ 1 + (1 | item) + (1 || id) +
+    (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id))
+
+# 2PL variants add an item-specific discrimination submodel
+bf_ct_2pl <- bf(
+  response ~ 1 + (1 | item) + (0 + dim_m + dim_l + dim_p | id),
+  disc ~ 1 + (1 | item))
+bf_bf_2pl <- bf(
+  response ~ 1 + (1 | item) + (1 | id) +
+    (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id),
+  disc ~ 1 + (1 | item))
+
+# GPCM variants use item-specific thresholds via cs(1)
+bf_ct_gpcm <- bf(
+  response ~ 1 + (cs(1) | item) + (0 + dim_m + dim_l + dim_p | id),
+  disc ~ 1 + (1 | item))
+bf_bf_gpcm <- bf(
+  response ~ 1 + (cs(1) | item) + (1 | id) +
+    (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id),
+  disc ~ 1 + (1 | item))
+
+# DIF models add group covariates with item-level random slopes
+bf_dif <- bf(
+  response ~ 1 + gender + (0 + gender | item) + (1 | id) +
+    (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id),
+  disc ~ 1 + (1 | item))
+bf_dif2 <- bf(
+  response ~ 1 + gender + District + (1 + gender + District || item) +
+    (1 | id) + (0 + dim_m || id) + (0 + dim_l || id) + (0 + dim_p || id),
+  disc ~ 1 + (1 | item))
+
+# Fitted models. acat = adjacent-category, cuml = cumulative logit.
+#   RSM  = acat, no disc        GRSM = acat + disc
+#   GPCM = acat + cs() + disc   GRM  = cuml + disc
+acat <- brmsfamily("acat", "logit")
+cuml <- brmsfamily("cumulative", "logit")
+
+null_rsm    <- brm(bf_uni,     family = acat, data = data_1) # 5-category
+merge_rsm   <- brm(bf_uni,     family = acat, data = data_2) # 4-category
+ct_rsm      <- brm(bf_ct,      family = acat, data = data_2)
+bf_rsm      <- brm(bf_bf,      family = acat, data = data_2)
+ct_grsm     <- brm(bf_ct_2pl,  family = acat, data = data_2)
+bf_grsm     <- brm(bf_bf_2pl,  family = acat, data = data_2)
+ct_grsm_20  <- brm(bf_ct_2pl,  family = acat, data = data_3) # 4 removed
+bf_grsm_20  <- brm(bf_bf_2pl,  family = acat, data = data_3)
+ct_gpcm_20  <- brm(bf_ct_gpcm, family = acat, data = data_3)
+bf_gpcm_20  <- brm(bf_bf_gpcm, family = acat, data = data_3)
+ct_grm_20   <- brm(bf_ct_2pl,  family = cuml, data = data_3)
+bf_grm_20   <- brm(bf_bf_2pl,  family = cuml, data = data_3) # final
+bf_grm_dif  <- brm(bf_dif,     family = cuml, data = data_3)
+bf_grm_dif2 <- brm(bf_dif2,    family = cuml, data = data_3)
+```
 
 \normalsize
 

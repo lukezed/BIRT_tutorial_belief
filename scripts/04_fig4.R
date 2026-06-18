@@ -1,8 +1,8 @@
 # scripts/04_fig4.R
-source("scripts/00_packages.R")
+source(here::here("scripts", "00_packages.R"))
 
 if (!exists("merge_rsm")) {
-  merge_rsm <- readRDS("models/merge_rsm.rds")
+  merge_rsm <- readRDS(here("models", "merge_rsm.rds"))
 }
 
 item_order <- c(
@@ -70,7 +70,7 @@ fig_4 <- p1 | p2
 print(fig_4)
 
 ggsave(
-  filename = "figures/fig4_wright_map.png", 
+  filename = here("figures", "fig4_wright_map.png"), 
   plot = fig_4, 
   width = 6.5, 
   height = 3.5, 

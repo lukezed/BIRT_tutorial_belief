@@ -1,8 +1,8 @@
 # scripts/05_fig5.R
-source("scripts/00_packages.R")
+source(here::here("scripts", "00_packages.R"))
 
-if (!exists("ct_grsm")) ct_grsm <- readRDS("models/ct_grsm.rds")
-if (!exists("bf_grsm")) bf_grsm <- readRDS("models/bf_grsm.rds")
+if (!exists("ct_grsm")) ct_grsm <- readRDS(here("models", "ct_grsm.rds"))
+if (!exists("bf_grsm")) bf_grsm <- readRDS(here("models", "bf_grsm.rds"))
 
 item_order <- c(
   "Bm_1_r", "Bm_2_r", "Bm_3_r", "Bm_4_r", "Bm_5", "Bm_6", "Bm_7", "Bm_8",
@@ -134,7 +134,7 @@ fig_5 <- (p1 | p2) / (p3 | p4)
 
 print(fig_5)
 
-ggsave("figures/fig5_model_comparison.png", 
+ggsave(here("figures", "fig5_model_comparison.png"), 
        fig_5, 
        width = 6.5,
        height = 6, 

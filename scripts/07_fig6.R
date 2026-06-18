@@ -1,6 +1,6 @@
 # scripts/07_fig6.R
-source("scripts/00_packages.R")
-bf_grm_20 <- readRDS("models/bf_grm_20.rds")
+source(here::here("scripts", "00_packages.R"))
+bf_grm_20 <- readRDS(here("models", "bf_grm_20.rds"))
 
 item_order_final <- c(
   "Bm_5", "Bm_6", "Bm_7", "Bm_8",
@@ -168,7 +168,7 @@ fig_6 <- (p1 | p2) / (p3 | p4) / (p5 | p6) +
 
 print(fig_6)
 
-ggsave("figures/fig6_final_diagnostics.png",
+ggsave(here("figures", "fig6_final_diagnostics.png"),
        fig_6, 
        width = 6.5,
        height = 7,

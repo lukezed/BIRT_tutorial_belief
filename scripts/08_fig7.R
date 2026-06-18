@@ -1,7 +1,7 @@
-source("scripts/00_packages.R")
+source(here::here("scripts", "00_packages.R"))
 
-bf_grm_dif  <- readRDS("models/bf_grm_dif.rds") 
-bf_grm_dif2 <- readRDS("models/bf_grm_dif2.rds")
+bf_grm_dif  <- readRDS(here("models", "bf_grm_dif.rds")) 
+bf_grm_dif2 <- readRDS(here("models", "bf_grm_dif2.rds"))
 
 colors_dim <- c(
   "Bm (Math)"     = "#555555", 
@@ -118,7 +118,7 @@ fig_7 <- (p1 | p2) / (p3 | p4)
 
 print(fig_7)
 
-ggsave("figures/fig7_combined_dif.png",
+ggsave(here("figures", "fig7_combined_dif.png"),
        fig_7, 
        width = 6.5, 
        height = 7,

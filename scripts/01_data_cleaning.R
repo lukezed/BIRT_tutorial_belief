@@ -1,7 +1,7 @@
 # scripts/01_data_cleaning.R
 
-source("scripts/00_packages.R")
-raw_data <- read_csv("data/raw/belief_clean.csv")
+source(here::here("scripts", "00_packages.R"))
+raw_data <- read_csv(here("data", "raw", "belief_clean.csv"))
 
 df_renamed <- raw_data
 colnames(df_renamed) <- gsub("^Ba_", "Bm_", colnames(df_renamed))
@@ -55,7 +55,7 @@ data_1 <- df_valid %>%
   )
 
 
-if(!dir.exists("data/processed")) 
-  dir.create("data/processed", recursive = TRUE)
+if(!dir.exists(here("data", "processed")))
+  dir.create(here("data", "processed"), recursive = TRUE)
 
-saveRDS(data_1, "data/processed/data_1.rds")
+saveRDS(data_1, here("data", "processed", "data_1.rds"))

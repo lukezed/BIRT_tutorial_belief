@@ -1,8 +1,8 @@
 # scripts/02_category_collapse.R
 
 # Resource loading
-source("scripts/00_packages.R")
-data_1 <- readRDS("data/processed/data_1.rds")
+source(here::here("scripts", "00_packages.R"))
+data_1 <- readRDS(here("data", "processed", "data_1.rds"))
 
 # 1(Strongly Disagree) & 2(Disagree) -> 1
 
@@ -18,4 +18,4 @@ data_2 <- data_1 %>%
     response = as.integer(response)
   )
 
-saveRDS(data_2, "data/processed/data_2.rds")
+saveRDS(data_2, here("data", "processed", "data_2.rds"))
