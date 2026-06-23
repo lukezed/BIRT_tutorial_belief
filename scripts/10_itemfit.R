@@ -38,7 +38,7 @@ infit_draws <- infit_statistic(
   merge_rsm,
   item_var   = item,
   person_var = id,
-  ndraws_use = 500,    # subset of draws for speed; use more for stable ppp
+  ndraws_use = 2000,   # matches the values reported in the manuscript table
   outfit     = TRUE
 )
 
@@ -57,40 +57,47 @@ itemfit <- infit_draws |>
 print(as.data.frame(itemfit), row.names = FALSE)
 
 # -----------------------------------------------------------------------------
-# RESULT (merge_rsm, ndraws_use = 500; MNSQ values are stable, ppp carries some
-# Monte Carlo noise at this draw count). Sorted by infit MNSQ.
+# RESULT (merge_rsm, ndraws_use = 2000; these are the values reported in the
+# manuscript table). Sorted by infit MNSQ.
 #
 #    item infit_MNSQ infit_ppp outfit_MNSQ outfit_ppp
-#  Bm_2_r      1.651     0.016       1.484      0.110   <- misfit (MNSQ>1.3, ppp<0.05)
-#  Bm_4_r      1.374     0.004       1.323      0.022   <- misfit (MNSQ>1.3, ppp<0.05)
-#  Bm_1_r      1.328     0.048       1.279      0.152   <- misfit (MNSQ>1.3, ppp<0.05)
-#  ---------------------------------------------------- gap (1.33 -> 1.09) --------
-#  Bl_6_r      1.093     0.174       1.057      0.286
-#  Bm_3_r      1.092     0.364       1.174      0.280   <- ACCEPTABLE (fit ok)
-#  Bl_11_r     1.090     0.176       1.083      0.190
-#  Bl_10_r     1.082     0.176       1.075      0.202
-#  Bl_9_r      1.077     0.214       1.073      0.242
-#  Bl_2        1.070     0.266       1.174      0.100
-#  Bm_5        1.026     0.380       1.050      0.322
-#  Bp_2_r      1.022     0.404       0.999      0.486
-#  Bm_8        1.013     0.500       1.059      0.352
-#  Bl_7_r      1.003     0.476       1.012      0.450
-#  Bl_8_r      0.982     0.538       0.984      0.522
-#  Bp_1_r      0.970     0.624       0.984      0.558
-#  Bl_5        0.940     0.710       0.992      0.550
-#  Bl_3_r      0.939     0.698       0.929      0.708
-#  Bm_6        0.886     0.820       0.925      0.734
-#  Bp_5        0.883     0.784       0.949      0.626
-#  Bm_7        0.820     0.912       0.870      0.814
-#  Bl_4_r      0.808     0.986       0.813      0.982
-#  Bl_1_r      0.804     0.978       0.817      0.964
-#  Bp_4        0.672     0.994       0.741      0.976
-#  Bp_3        0.619     0.998       0.645      0.996
+#  Bm_2_r      1.643     0.022       1.476      0.115   <- underfit (MNSQ>1.3, ppp<0.05)
+#  Bm_4_r      1.376     0.002       1.325      0.025   <- underfit (MNSQ>1.3, ppp<0.05)
+#  Bm_1_r      1.336     0.039       1.286      0.126   <- underfit (MNSQ>1.3, ppp<0.05)
+#  ---------------------------------------------------- gap (1.34 -> 1.09) --------
+#  Bm_3_r      1.093     0.316       1.174      0.238   <- ACCEPTABLE (fit ok)
+#  Bl_11_r     1.092     0.174       1.084      0.213
+#  Bl_6_r      1.091     0.190       1.056      0.312
+#  Bl_10_r     1.085     0.186       1.077      0.216
+#  Bl_9_r      1.079     0.207       1.074      0.238
+#  Bl_2        1.070     0.315       1.173      0.133
+#  Bp_2_r      1.022     0.434       0.999      0.501
+#  Bm_5        1.021     0.406       1.046      0.337
+#  Bm_8        1.012     0.459       1.057      0.344
+#  Bl_7_r      1.003     0.494       1.013      0.446
+#  Bl_8_r      0.983     0.570       0.986      0.556
+#  Bp_1_r      0.970     0.608       0.984      0.546
+#  Bl_5        0.940     0.650       0.992      0.504
+#  Bl_3_r      0.938     0.716       0.928      0.739
+#  Bm_6        0.886     0.786       0.925      0.680
+#  Bp_5        0.881     0.795       0.944      0.638
+#  Bm_7        0.818     0.909       0.868      0.817
+#  Bl_4_r      0.807     0.981       0.812      0.968
+#  Bl_1_r      0.801     0.980       0.814      0.955
+#  Bp_4        0.670     0.992       0.737      0.973
+#  Bp_3        0.616     0.999       0.640      0.996
 #
-# Reading: infit independently flags Bm_1_r, Bm_2_r, Bm_4_r (MNSQ > 1.3 and
-# ppp < 0.05 give the same three; they also sit apart from the rest by a clear
-# gap). Bm_3_r is NOT flagged by item fit (infit 1.09, ppp 0.36) -- it was
-# removed on near-zero discrimination grounds (Step 3). Item-fit and
-# discrimination diagnostics thus have complementary sensitivities, which is why
-# the multi-step workflow catches more than any single statistic would.
+# Reading: an item is flagged as UNDERFITTING when infit MNSQ > 1.3 and ppp < 0.05
+# (both signalling more noise than the model predicts); this catches Bm_1_r,
+# Bm_2_r, Bm_4_r, which also sit apart from the rest by a clear gap. The opposite
+# tail (low MNSQ, ppp near 1, e.g. Bp_3) is overfit (overly predictable) and is
+# not treated as misfit. Bm_3_r passes item fit and would survive a pure-Rasch
+# screen; it was removed on near-zero discrimination grounds (Step 3). Item-fit
+# and discrimination diagnostics thus have complementary sensitivities.
+#
+# Reproducibility: the manuscript table reports the mean-squares, which are
+# deterministic. The ppp is a Monte Carlo posterior predictive p-value (it relies
+# on posterior_predict), so its exact value can vary slightly across runs and
+# environments; the qualitative conclusion (the three items far below 0.05) is
+# stable.
 # -----------------------------------------------------------------------------

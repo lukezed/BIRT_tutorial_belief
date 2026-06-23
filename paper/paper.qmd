@@ -112,7 +112,7 @@ Beyond outperforming frequentist methods in small samples, Bayesian IRT addresse
 
 @deboeck2004explan demonstrated that IRT models can be estimated within a generalised linear mixed model (GLMM) framework. The R package `brms` [@burkner2017brmsb], which has become a widely used platform for Bayesian multilevel modelling, builds on this equivalence. It calls `Stan` [@carpenter2017stana] as its backend for Hamiltonian Monte Carlo sampling, enabling efficient exploration of the high-dimensional parameter spaces characteristic of multidimensional IRT.
 
-The GLMM-based approach as implemented in brms does have known limitations. Most notably, `brms` does not support jointly specifying latent variables within the model formula, which means that certain complex modelling strategies, such as the explanatory multidimensional IRT framework of @kleinsasser2024person where person-level regression models are estimated simultaneously within the IRT likelihood, are not currently specifiable. \rev{This limitation concerns \emph{jointly modelled latent regressions}; correlations among the latent traits themselves are fully supported through the random-effect covariance structure and are used for the correlated-traits model below. Ongoing \texttt{brms} development is expanding its latent-variable functionality.}[^brms3] Nevertheless, for the class of models covered in this tutorial, `brms` offers a compelling combination of one-stop integration and concise, transferable syntax. Within a single formula interface, researchers can specify multiple ordinal model families (cumulative and adjacent-category links), multidimensional structures (correlated-traits and bi-factor), item-specific discrimination via distributional regression, covariates, and differential item functioning, all with built-in model comparison through approximate leave-one-out cross-validation [@vehtari2017practia].
+The GLMM-based approach as implemented in brms does have known limitations. Most notably, `brms` does not support jointly specifying latent variables within the model formula, which means that certain complex modelling strategies, such as the explanatory multidimensional IRT framework of @kleinsasser2024person where person-level regression models are estimated simultaneously within the IRT likelihood, are not currently specifiable. \rev{This limitation concerns \emph{jointly modelled latent regressions}: correlations among the latent traits themselves are supported through the random-effect covariance structure, as we use for the correlated-traits model below.}[^brms3] Nevertheless, for the class of models covered in this tutorial, `brms` offers a compelling combination of one-stop integration and concise, transferable syntax. Within a single formula interface, researchers can specify multiple ordinal model families (cumulative and adjacent-category links), multidimensional structures (correlated-traits and bi-factor), item-specific discrimination via distributional regression, covariates, and differential item functioning, all with built-in model comparison through approximate leave-one-out cross-validation [@vehtari2017practia].
 
 [^brms3]: \rev{See, e.g., the planned latent-variable features discussed at} \url{https://github.com/paul-buerkner/brms/issues/304}.
 
@@ -163,7 +163,7 @@ Throughout this tutorial, we use composite diagnostic plots that display item di
 
 In terms of diagnostic interpretation, item difficulty does not lend itself to a strict cutoff criterion. What matters is that items are distributed across a reasonably continuous range of the latent continuum and that this range provides adequate coverage of the person ability distribution. Problematic items typically manifest as outlying difficulty values accompanied by excessively wide credible intervals, indicating that the data provide limited information for estimating those items' locations; examples of this pattern will be encountered in the workflow. For discrimination, we adopt the conventional threshold of $\alpha < 0.5$ following @embretson2013itema, below which an item is considered a poor discriminator. In substantive terms, this means that responses to such an item are largely independent of the latent trait and the item contributes minimal measurement information.
 
-\rev{Classical item-fit statistics (e.g., infit, outfit, $S$-$X^2$) originate in the Rasch tradition, but they are not inherently frequentist: they also have posterior-predictive Bayesian forms.} @bohn2025previc \rev{compute such statistics for each posterior draw and aggregate them, and the \texttt{easyRaschBayes} package} [@johansson2026easyra] \rev{implements posterior-predictive infit/outfit directly for \texttt{brms} models, summarising item fit through posterior predictive $p$-values (ppp). These are a special case of the broader posterior predictive checking (ppc) approach to item-level diagnostics} [@winter2025tutoria]. \rev{We use posterior-predictive infit/outfit as a complementary cross-check when freeing discrimination (Step 3).}
+\rev{Item-fit statistics (e.g., infit, outfit, $S$-$X^2$) are not inherently frequentist: they also have posterior-predictive Bayesian forms.} @bohn2025previc \rev{compute such statistics for each posterior draw and aggregate them, and the \texttt{easyRaschBayes} package} [@johansson2026easyra] \rev{implements posterior-predictive infit/outfit directly for \texttt{brms} models, summarising item fit through posterior predictive $p$-values (ppp). These are a special case of the broader posterior predictive checking (ppc) approach to item-level diagnostics} [@winter2025tutoria]. \rev{We treat an item as underfitting when its infit mean-square exceeds 1.3 and, equivalently, its posterior predictive $p$ falls below 0.05, both signalling more response noise than the model predicts; the opposite tail (a low mean-square, $p$ near 1) reflects overly predictable responses and is not treated as misfit. We use these statistics as a complementary cross-check when freeing discrimination (Step 3).}
 
 
 ## \rev{Reliability}
@@ -363,16 +363,36 @@ More importantly for our ongoing diagnostic concern, the threshold anomaly is no
 
 The discrimination panels unsurprisingly reveal substantially different discrimination values across items, confirming that the equal-discrimination assumption was inappropriate. Most items cluster in a reasonable range, but four items stand out: Bm_1_r, Bm_2_r, Bm_3_r, and Bm_4_r. These four items all belong to the "beliefs about mathematics" subscale and share the same reverse-coded formalist orientation (e.g., "Mathematics is a collection of rules and procedures"). Their discrimination estimates fall well below the conventional $\alpha = 0.5$ threshold for 'poor' items [@embretson2013itema]. This indicates that item responses are virtually independent of the measured latent trait: a respondent's location on the latent continuum exerts little to no influence on their probability of selecting a given category. Their difficulty estimates are simultaneously problematic with very wide CrIs, meaning they are poorly identified by the data and nearly all respondents find it easy to endorse the exclusive end. This pattern was invisible under the RSM, because the equal-discrimination assumption diluted these poor measurement properties across the shared parameter structure rather than localising them to specific items.
 
-\rev{The same conclusion can also be reached through item-fit diagnostics. Applying the Bayesian posterior-predictive infit and outfit, which are closer to the Rasch community's intuition, to the RSM (}\texttt{merge\_rsm}\rev{) under conventional cutoffs returns similar information across the full item set: Bm\_1\_r, Bm\_2\_r, and Bm\_4\_r are again flagged as unacceptable, while Bm\_3\_r survives as acceptable.} \rev{For brevity,} @tbl-itemfit \rev{reports only these four items.}
+\rev{Our removal of all four items rests on the freed-discrimination analysis above. As an independent cross-check, the Bayesian posterior-predictive infit and outfit introduced earlier, computed on the RSM (}\texttt{merge\_rsm}\rev{), flag three of the same four items (}@tbl-itemfit\rev{): Bm\_1\_r, Bm\_2\_r, and Bm\_4\_r exceed the underfit cutoffs (infit mean-square above 1.3, posterior predictive p below 0.05) and stand apart from the rest by a clear gap. Bm\_3\_r is the one point of difference: it passes item fit and would be retained under a pure Rasch screen, and is exposed only once discrimination is freed. We therefore take the discrimination evidence as decisive and remove all four.}
 
-| Item | Infit MNSQ | Infit *p* | Outfit MNSQ | Outfit *p* |
+| Item | Infit MNSQ | Infit ppp | Outfit MNSQ | Outfit ppp |
 |:--|--:|--:|--:|--:|
-| Bm_1_r | 1.34 | 0.018 | 1.29 | 0.070 |
-| Bm_2_r | 1.64 | 0.004 | 1.48 | 0.046 |
-| Bm_3_r | 1.09 | 0.230 | 1.17 | 0.140 |
-| Bm_4_r | 1.38 | 0.002 | 1.33 | 0.014 |
+| **Bm_2_r** | 1.64 | 0.022 | 1.48 | 0.115 |
+| **Bm_4_r** | 1.38 | 0.002 | 1.33 | 0.025 |
+| **Bm_1_r** | 1.34 | 0.039 | 1.29 | 0.126 |
+| Bm_3_r | 1.09 | 0.316 | 1.17 | 0.238 |
+| Bl_11_r | 1.09 | 0.174 | 1.08 | 0.213 |
+| Bl_6_r | 1.09 | 0.190 | 1.06 | 0.312 |
+| Bl_10_r | 1.09 | 0.186 | 1.08 | 0.216 |
+| Bl_9_r | 1.08 | 0.207 | 1.07 | 0.238 |
+| Bl_2 | 1.07 | 0.315 | 1.17 | 0.133 |
+| Bp_2_r | 1.02 | 0.434 | 1.00 | 0.501 |
+| Bm_5 | 1.02 | 0.406 | 1.05 | 0.337 |
+| Bm_8 | 1.01 | 0.459 | 1.06 | 0.344 |
+| Bl_7_r | 1.00 | 0.494 | 1.01 | 0.446 |
+| Bl_8_r | 0.98 | 0.570 | 0.99 | 0.556 |
+| Bp_1_r | 0.97 | 0.608 | 0.98 | 0.546 |
+| Bl_5 | 0.94 | 0.650 | 0.99 | 0.504 |
+| Bl_3_r | 0.94 | 0.716 | 0.93 | 0.739 |
+| Bm_6 | 0.89 | 0.786 | 0.93 | 0.680 |
+| Bp_5 | 0.88 | 0.795 | 0.94 | 0.638 |
+| Bm_7 | 0.82 | 0.909 | 0.87 | 0.817 |
+| Bl_4_r | 0.81 | 0.981 | 0.81 | 0.968 |
+| Bl_1_r | 0.80 | 0.980 | 0.81 | 0.955 |
+| Bp_4 | 0.67 | 0.992 | 0.74 | 0.973 |
+| Bp_3 | 0.62 | 0.999 | 0.64 | 0.996 |
 
-: Posterior-predictive infit and outfit (mean-square and one-sided posterior predictive *p*) for the four reverse-coded mathematics items, from the full-instrument RSM (`merge_rsm`); the remaining items showed no item-fit anomaly. Under conventional cutoffs (infit mean-square > 1.3, infit *p* < 0.05), Bm_1_r, Bm_2_r, and Bm_4_r are unacceptable while Bm_3_r is within bounds; outfit is reported for reference. Estimates use 2,000 posterior draws. {#tbl-itemfit}
+: Posterior-predictive infit and outfit for all 24 items at the RSM stage (`merge_rsm`), ordered by infit. An item is flagged as underfitting when its infit mean-square exceeds 1.3 and its posterior predictive *p* falls below 0.05 (both indicating more response noise than the model predicts): Bm_1_r, Bm_2_r, and Bm_4_r meet this and are separated from the rest by a clear gap. The opposite tail (low mean-square, *p* near 1, e.g. Bp_3) reflects overly predictable responses and is not treated as misfit. The *p*-values are Monte Carlo posterior-predictive estimates and vary slightly across runs, although the resulting classification is stable. {#tbl-itemfit}
 
 ## Step 4: Item removal and link function comparison
 
@@ -535,10 +555,10 @@ Among the person parameters, the math-specific factor has the largest SD ($2.60$
 | $\omega_{\mathrm{H}}$ (general factor) | 0.61 | [0.48, 0.72] |
 | ECV (general factor) | 0.68 | [0.55, 0.79] |
 | **Per-dimension reliability (RMU)** | | |
-| General | 0.61 | [0.50, 0.71] |
-| Mathematics | 0.62 | [0.53, 0.71] |
-| Learners | 0.55 | [0.44, 0.66] |
-| Pedagogy | 0.32 | [0.14, 0.49] |
+| General (inclusive equity belief) | 0.61 | [0.50, 0.71] |
+| Mathematics-specific | 0.62 | [0.53, 0.71] |
+| Learners-specific | 0.55 | [0.43, 0.66] |
+| Pedagogy-specific | 0.32 | [0.15, 0.50] |
 
 : Reliability of the final model (`bf_grm_20`), computed over the full posterior. Total-score coefficients are model-based omega [@rodriguez2016evalua]; per-dimension entries are the relative measurement uncertainty (RMU) reliability with its 95% HDCI. {#tbl-reliability}
 
@@ -561,13 +581,11 @@ bf_grm_dif <- brm(
 )
 ```
 
-\rev{In this notation the term after the vertical bar is the grouping factor: grouping on item gives each item its own gender (and district) effect, partially pooled across items, which is what a DIF test requires. The cell-means coding }\texttt{(0 + gender | item)}\rev{ and the equivalent }\texttt{(1 + gender | item)}\rev{ re-express the same bivariate-normal model in two forms: separate male and female levels per item, or a reference level plus a male-female difference.}
-
-\rev{The benefit of the cell-means coding} is that we can directly inspect how males and females perform on each item. However, determining whether the male-female difference is statistically meaningful is less straightforward, because we do not have a single posterior for the difference itself. @bohn2025previc \rev{offers a practical, diagnostic heuristic: flagging an item when its male and female 95\% credible intervals do not overlap, that is, when one interval lies entirely above or below the other. None of the 20 items is flagged on this criterion (Panel A of} @fig-dif\rev{). This is a deliberately conservative screen rather than a formal DIF test: requiring two 95\% credible intervals to be disjoint is a stronger condition than the difference itself being credible, so genuine but smaller differences can be missed.}[^8]
+\rev{Here the grouping factor is }\texttt{item}\rev{, so each item carries its own male and female level (jointly bivariate normal); the benefit of }\texttt{(0 + gender | item)}\rev{ is that we can read the two group posteriors directly. Following} @bohn2025previc\rev{, Panel A of} @fig-dif \rev{flags an item when its male and female 95\% credible intervals do not overlap, and none of the 20 items is. This heuristic is convenient but not strict: overlapping intervals can still hide a credible difference.}[^8]
 
 [^8]: This is analogous to a situation in frequentist inference where two confidence intervals overlap but the difference between the two means can be nonetheless statistically significant.
 
-A more straightforward approach is to model DIF directly by specifying `(1 + gender | item)`, which treats one category as the baseline and estimates the male-minus-female deviation for each item. An item exhibits credible DIF when the 95% CrI for this deviation falls entirely on one side of zero. We extend this to include group variables simultaneously, testing for DIF across both gender and district:
+\rev{A stricter test models the difference itself. The }\texttt{(1 + gender | item)}\rev{ coding, a reparameterisation of the same model, gives a posterior for the male-minus-female deviation per item; we flag DIF when its 95\% CrI excludes zero, and extend this to gender and district jointly (Panel B):}
 
 ``` r
 bf_grm_dif2 <- brm(

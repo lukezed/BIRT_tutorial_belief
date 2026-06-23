@@ -107,6 +107,7 @@ rmu_for <- function(term, label) {
              L95 = round(h$hdci_lowerbound, 3),
              U95 = round(h$hdci_upperbound, 3))
 }
+set.seed(1234)  # RMUreliability splits the draws at random; fix for reproducibility
 rmu_table <- rbind(
   rmu_for("Intercept", "General (belief)"),
   rmu_for("dim_m",     "Specific: mathematics"),
@@ -128,9 +129,9 @@ print(rmu_table, row.names = FALSE)
 # (B) RMU reliability [95% HDCI] (easyRaschBayes; Bignardi/Burkner 2025)
 #                 factor   rmu   L95   U95
 #       General (belief) 0.610 0.500 0.705
-#  Specific: mathematics 0.622 0.530 0.709
-#     Specific: learners 0.549 0.440 0.657
-#     Specific: pedagogy 0.316 0.135 0.487
+#  Specific: mathematics 0.621 0.530 0.711
+#     Specific: learners 0.551 0.434 0.656
+#     Specific: pedagogy 0.317 0.146 0.499
 #
 # Reading: the composite total score is highly reliable (omega_total = 0.90),
 # carried by a dominant general factor (omega_H 0.61, ECV 0.68). The single-
