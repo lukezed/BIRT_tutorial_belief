@@ -365,32 +365,32 @@ The discrimination panels unsurprisingly reveal substantially different discrimi
 
 \rev{Our removal of all four items rests on the freed-discrimination analysis above. As an independent cross-check, the Bayesian posterior-predictive infit and outfit introduced earlier, computed on the RSM (}\texttt{merge\_rsm}\rev{), flag three of the same four items (}@tbl-itemfit\rev{): Bm\_1\_r, Bm\_2\_r, and Bm\_4\_r exceed the underfit cutoffs (infit mean-square above 1.3, posterior predictive p below 0.05) and stand apart from the rest by a clear gap. Bm\_3\_r is the one point of difference: it passes item fit and would be retained under a pure Rasch screen, and is exposed only once discrimination is freed. We therefore take the discrimination evidence as decisive and remove all four.}
 
-| Item | Infit MNSQ | Infit ppp | Outfit MNSQ | Outfit ppp |
+| Item | Infit MNSQ | Infit *ppp* | Outfit MNSQ | Outfit *ppp* |
 |:--|--:|--:|--:|--:|
-| **Bm_2_r** | 1.64 | 0.022 | 1.48 | 0.115 |
-| **Bm_4_r** | 1.38 | 0.002 | 1.33 | 0.025 |
-| **Bm_1_r** | 1.34 | 0.039 | 1.29 | 0.126 |
-| Bm_3_r | 1.09 | 0.316 | 1.17 | 0.238 |
-| Bl_11_r | 1.09 | 0.174 | 1.08 | 0.213 |
-| Bl_6_r | 1.09 | 0.190 | 1.06 | 0.312 |
-| Bl_10_r | 1.09 | 0.186 | 1.08 | 0.216 |
-| Bl_9_r | 1.08 | 0.207 | 1.07 | 0.238 |
-| Bl_2 | 1.07 | 0.315 | 1.17 | 0.133 |
-| Bp_2_r | 1.02 | 0.434 | 1.00 | 0.501 |
-| Bm_5 | 1.02 | 0.406 | 1.05 | 0.337 |
-| Bm_8 | 1.01 | 0.459 | 1.06 | 0.344 |
-| Bl_7_r | 1.00 | 0.494 | 1.01 | 0.446 |
-| Bl_8_r | 0.98 | 0.570 | 0.99 | 0.556 |
-| Bp_1_r | 0.97 | 0.608 | 0.98 | 0.546 |
-| Bl_5 | 0.94 | 0.650 | 0.99 | 0.504 |
-| Bl_3_r | 0.94 | 0.716 | 0.93 | 0.739 |
-| Bm_6 | 0.89 | 0.786 | 0.93 | 0.680 |
-| Bp_5 | 0.88 | 0.795 | 0.94 | 0.638 |
-| Bm_7 | 0.82 | 0.909 | 0.87 | 0.817 |
-| Bl_4_r | 0.81 | 0.981 | 0.81 | 0.968 |
-| Bl_1_r | 0.80 | 0.980 | 0.81 | 0.955 |
-| Bp_4 | 0.67 | 0.992 | 0.74 | 0.973 |
-| Bp_3 | 0.62 | 0.999 | 0.64 | 0.996 |
+| **Bm_2_r** | $\mathbf{1.64}$ | $\mathbf{0.022}$ | $\mathbf{1.48}$ | $\mathbf{0.115}$ |
+| **Bm_4_r** | $\mathbf{1.38}$ | $\mathbf{0.002}$ | $\mathbf{1.33}$ | $\mathbf{0.025}$ |
+| **Bm_1_r** | $\mathbf{1.34}$ | $\mathbf{0.039}$ | $\mathbf{1.29}$ | $\mathbf{0.126}$ |
+| Bm_3_r | $1.09$ | $0.316$ | $1.17$ | $0.238$ |
+| Bl_11_r | $1.09$ | $0.174$ | $1.08$ | $0.213$ |
+| Bl_6_r | $1.09$ | $0.190$ | $1.06$ | $0.312$ |
+| Bl_10_r | $1.09$ | $0.186$ | $1.08$ | $0.216$ |
+| Bl_9_r | $1.08$ | $0.207$ | $1.07$ | $0.238$ |
+| Bl_2 | $1.07$ | $0.315$ | $1.17$ | $0.133$ |
+| Bp_2_r | $1.02$ | $0.434$ | $1.00$ | $0.501$ |
+| Bm_5 | $1.02$ | $0.406$ | $1.05$ | $0.337$ |
+| Bm_8 | $1.01$ | $0.459$ | $1.06$ | $0.344$ |
+| Bl_7_r | $1.00$ | $0.494$ | $1.01$ | $0.446$ |
+| Bl_8_r | $0.98$ | $0.570$ | $0.99$ | $0.556$ |
+| Bp_1_r | $0.97$ | $0.608$ | $0.98$ | $0.546$ |
+| Bl_5 | $0.94$ | $0.650$ | $0.99$ | $0.504$ |
+| Bl_3_r | $0.94$ | $0.716$ | $0.93$ | $0.739$ |
+| Bm_6 | $0.89$ | $0.786$ | $0.93$ | $0.680$ |
+| Bp_5 | $0.88$ | $0.795$ | $0.94$ | $0.638$ |
+| Bm_7 | $0.82$ | $0.909$ | $0.87$ | $0.817$ |
+| Bl_4_r | $0.81$ | $0.981$ | $0.81$ | $0.968$ |
+| Bl_1_r | $0.80$ | $0.980$ | $0.81$ | $0.955$ |
+| Bp_4 | $0.67$ | $0.992$ | $0.74$ | $0.973$ |
+| Bp_3 | $0.62$ | $0.999$ | $0.64$ | $0.996$ |
 
 : Posterior-predictive infit and outfit for all 24 items at the RSM stage (`merge_rsm`), ordered by infit. An item is flagged as underfitting when its infit mean-square exceeds 1.3 and its posterior predictive *p* falls below 0.05 (both indicating more response noise than the model predicts): Bm_1_r, Bm_2_r, and Bm_4_r meet this and are separated from the rest by a clear gap. The opposite tail (low mean-square, *p* near 1, e.g. Bp_3) reflects overly predictable responses and is not treated as misfit. The *p*-values are Monte Carlo posterior-predictive estimates and vary slightly across runs, although the resulting classification is stable. {#tbl-itemfit}
 
@@ -551,14 +551,14 @@ Among the person parameters, the math-specific factor has the largest SD ($2.60$
 | Quantity | Estimate | 95% interval |
 |:--|--:|:--:|
 | **Total-score reliability** | | |
-| $\omega_{\text{total}}$ | 0.90 | [0.87, 0.92] |
-| $\omega_{\mathrm{H}}$ (general factor) | 0.61 | [0.48, 0.72] |
-| ECV (general factor) | 0.68 | [0.55, 0.79] |
+| $\omega_{\text{total}}$ | $0.90$ | $[0.87, 0.92]$ |
+| $\omega_{\mathrm{H}}$ (general factor) | $0.61$ | $[0.48, 0.72]$ |
+| ECV (general factor) | $0.68$ | $[0.55, 0.79]$ |
 | **Per-dimension reliability (RMU)** | | |
-| General (inclusive equity belief) | 0.61 | [0.50, 0.71] |
-| Mathematics-specific | 0.62 | [0.53, 0.71] |
-| Learners-specific | 0.55 | [0.43, 0.66] |
-| Pedagogy-specific | 0.32 | [0.15, 0.50] |
+| General (inclusive equity belief) | $0.61$ | $[0.50, 0.71]$ |
+| Mathematics-specific | $0.62$ | $[0.53, 0.71]$ |
+| Learners-specific | $0.55$ | $[0.43, 0.66]$ |
+| Pedagogy-specific | $0.32$ | $[0.15, 0.50]$ |
 
 : Reliability of the final model (`bf_grm_20`), computed over the full posterior. Total-score coefficients are model-based omega [@rodriguez2016evalua]; per-dimension entries are the relative measurement uncertainty (RMU) reliability with its 95% HDCI. {#tbl-reliability}
 
@@ -581,7 +581,7 @@ bf_grm_dif <- brm(
 )
 ```
 
-\rev{In this notation the variable after the vertical bar is the grouping factor; here it is }\texttt{item}\rev{, so each item carries its own male and female level (jointly bivariate normal). The benefit of }\texttt{(0 + gender | item)}\rev{ is that we can read the two group posteriors directly. Following} @bohn2025previc\rev{, Panel A of} @fig-dif \rev{flags an item when its male and female 95\% credible intervals do not overlap, and none of the 20 items is. This heuristic is convenient but not strict: overlapping intervals can still hide a credible difference.}[^8]
+\rev{In this notation the variable after the vertical bar is the grouping factor; here it is }\texttt{item}\rev{, so each item carries its own male and female level (jointly bivariate normal). The benefit of }\texttt{(0 + gender | item)} \rev{ is that we can read the two group posteriors directly. Following} @bohn2025previc\rev{, Panel A of} @fig-dif \rev{flags an item when its male and female 95\% credible intervals do not overlap, and none of the 20 items is. This heuristic is convenient but not strict: overlapping intervals can still hide a credible difference.}[^8]
 
 [^8]: This is analogous to a situation in frequentist inference where two confidence intervals overlap but the difference between the two means can be nonetheless statistically significant.
 
@@ -602,7 +602,7 @@ bf_grm_dif2 <- brm(
 )
 ```
 
-@fig-dif \rev{presents the full DIF analysis, and the conservative overlap screen (Panel A) and the stricter difference test agree. In Panel B every item's gender DIF effect (log-odds, male minus female, from }\texttt{bf\_grm\_dif2}\rev{) has a 95\% CrI that includes zero, as does every district effect in Panel C (Districts 2 and 3 relative to District 1). The instrument thus appears to function consistently across gender and district subgroups.}
+@fig-dif \rev{presents the full DIF analysis, and the conservative overlap screen (Panel A) and the stricter difference test agree. In Panel B every item's gender DIF effect (log-odds, male minus female, from }\texttt{bf\_grm\_dif2} \rev{) has a 95\% CrI that includes zero, as does every district effect in Panel C (Districts 2 and 3 relative to District 1). The instrument thus appears to function consistently across gender and district subgroups.}
 
 ![Differential item functioning and covariate analysis. Panel A: posterior overlap diagnostic for gender `bf_grm_dif`. Panel B: item-level gender DIF effects from `bf_grm_dif2`. Panel C: item-level district DIF effects. Panel D: Estimated category response probabilities by district. \rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}](../figures/fig7_combined_dif.png){#fig-dif width="95%"}
 
