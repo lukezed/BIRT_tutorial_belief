@@ -566,7 +566,7 @@ Among the person parameters, the math-specific factor has the largest SD ($2.60$
 
 Finally, we conduct a DIF analysis on the selected model to ensure that items function consistently across demographic subgroups, a property known as measurement invariance. When an item exhibits differential item functioning (DIF), respondents from different groups who share the same level of the latent trait have systematically different probabilities of endorsing a given category, which can bias group comparisons.
 
-One intuitive approach is to specify `(0 + gender | item)` alongside `gender` as a fixed effect. This estimates separate item-level random effects for males and females, giving us distinct posterior distributions of item difficulty for each group:
+One intuitive approach is to specify `(0 + gender | item)` alongside `gender` as a fixed effect:
 
 ``` r
 bf_grm_dif <- brm(
@@ -581,7 +581,7 @@ bf_grm_dif <- brm(
 )
 ```
 
-\rev{Here the grouping factor is }\texttt{item}\rev{, so each item carries its own male and female level (jointly bivariate normal); the benefit of }\texttt{(0 + gender | item)}\rev{ is that we can read the two group posteriors directly. Following} @bohn2025previc\rev{, Panel A of} @fig-dif \rev{flags an item when its male and female 95\% credible intervals do not overlap, and none of the 20 items is. This heuristic is convenient but not strict: overlapping intervals can still hide a credible difference.}[^8]
+\rev{In this notation the variable after the vertical bar is the grouping factor; here it is }\texttt{item}\rev{, so each item carries its own male and female level (jointly bivariate normal). The benefit of }\texttt{(0 + gender | item)}\rev{ is that we can read the two group posteriors directly. Following} @bohn2025previc\rev{, Panel A of} @fig-dif \rev{flags an item when its male and female 95\% credible intervals do not overlap, and none of the 20 items is. This heuristic is convenient but not strict: overlapping intervals can still hide a credible difference.}[^8]
 
 [^8]: This is analogous to a situation in frequentist inference where two confidence intervals overlap but the difference between the two means can be nonetheless statistically significant.
 
@@ -602,7 +602,7 @@ bf_grm_dif2 <- brm(
 )
 ```
 
-@fig-dif presents the item-level DIF results. Panel A shows the posterior overlap diagnostic from `bf_grm_dif`, and Panel B shows the item-level gender DIF effects (log-odds difference, male minus female) from `bf_grm_dif2`; all 20 items have 95% CrIs that include zero. Panel C shows the district DIF effects (Districts 2 and 3 relative to District 1), and again no item exhibits a credible DIF effect. The instrument thus appears to function consistently across gender and district subgroups.
+@fig-dif \rev{presents the full DIF analysis, and the conservative overlap screen (Panel A) and the stricter difference test agree. In Panel B every item's gender DIF effect (log-odds, male minus female, from }\texttt{bf\_grm\_dif2}\rev{) has a 95\% CrI that includes zero, as does every district effect in Panel C (Districts 2 and 3 relative to District 1). The instrument thus appears to function consistently across gender and district subgroups.}
 
 ![Differential item functioning and covariate analysis. Panel A: posterior overlap diagnostic for gender `bf_grm_dif`. Panel B: item-level gender DIF effects from `bf_grm_dif2`. Panel C: item-level district DIF effects. Panel D: Estimated category response probabilities by district. \rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}](../figures/fig7_combined_dif.png){#fig-dif width="95%"}
 
