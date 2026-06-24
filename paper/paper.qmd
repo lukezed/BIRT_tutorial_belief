@@ -153,7 +153,7 @@ The reliability of the PSIS-LOO approximation is monitored through Pareto $\hat{
 
 We recommend that Pareto $\hat{k}$ diagnostics be reported alongside ELPD differences as a matter of practice: a model with the best ELPD but many problematic $\hat{k}$ values may be a less trustworthy choice than a slightly worse-fitting model with clean diagnostics.
 
-\rev{As a complementary cue for model selection, we also report the LOO-based stacking weights} [@yao2018using]\rev{: a model that receives almost all of the weight corroborates its selection. We use these weights only as supporting evidence alongside the ELPD differences, not to form a combined model.}
+\rev{As a complementary cue for model selection, we also report the LOO-based stacking weights} [@yao2018using]\rev{: a model that receives almost all of the weight corroborates its selection.}
 
 An important scope condition applies throughout: LOO-CV is only valid for comparing models fitted to the same set of observations with the same response variable. This constraint is relevant at several points in the workflow. When response categories are collapsed, the response variable changes and ELPD values from before and after collapsing are not comparable. Similarly, when items are removed, the observation set changes and ELPD values across different item sets cannot be directly compared. At these decision points, the workflow relies on parameter-level diagnostics.
 
@@ -398,7 +398,7 @@ The discrimination panels unsurprisingly reveal substantially different discrimi
 
 The four problematic items (Bm_1_r through Bm_4_r) all concern formalist statements about the nature of mathematics (see Appendix B for item wording). These items performed well in the large-scale international survey from which the instrument was adapted (@tatto2013teachea), suggesting that the poor discrimination observed here reflects a cultural mismatch rather than a universal item defect. Chinese mathematics teachers may not perceive an emphasis on memorisation and procedural fluency as contradicting an emphasis on creativity and application, making these formalist items uninformative for differentiating teachers along the equity belief continuum in this population. Regardless of the explanation, the diagnostic evidence from Step 3 provides sufficient grounds for removal: these items contribute limited and potentially misleading information to the measurement model. After removal, the reduced dataset (`data_3`) contains 20 items.
 
-With the four misfitting items removed, thresholds under both `ct_grsm_20` and `bf_grsm_20` are now in monotonic order as showed in @tbl-grsm-20-summary. `ct_grsm_20` estimates moderate to strong correlations among the three dimensions, with the strongest association between mathematics and pedagogy beliefs ($r = 0.51$, 95% CrI $[0.31, 0.68]$), suggesting that teachers who view mathematics as a creative and applied discipline also tend to be more receptive to innovative teaching approaches. `bf_grsm_20` also successfully separates a general inclusive belief factor (SD $= 1.73$, 95% CrI $[0.82, 2.98]$) from dimension-specific residuals.
+With the four misfitting items removed, thresholds under both `ct_grsm_20` and `bf_grsm_20` are now in monotonic order as shown in @tbl-grsm-20-summary. `ct_grsm_20` estimates moderate to strong correlations among the three dimensions, with the strongest association between mathematics and pedagogy beliefs ($r = 0.51$, 95% CrI $[0.31, 0.68]$), suggesting that teachers who view mathematics as a creative and applied discipline also tend to be more receptive to innovative teaching approaches. `bf_grsm_20` also successfully separates a general inclusive belief factor (SD $= 1.73$, 95% CrI $[0.82, 2.98]$) from dimension-specific residuals.
 
 | Parameter | Estimate | 95% CrI | $\hat{R}$ |
 |:---|:---|:---|:---|
@@ -463,7 +463,7 @@ bf_grm_20 <- brm(
 
 ### Model comparison and selection
 
-Crossing these three link function families with two dimensional structures (CT and BF) yields six candidate models, all fitted to the same 20-item, 4-category dataset. @tbl-loo-final-compare shows the comparsion results.
+Crossing these three link function families with two dimensional structures (CT and BF) yields six candidate models, all fitted to the same 20-item, 4-category dataset. @tbl-loo-final-compare shows the comparison results.
 
 | Model | ELPD (SE) | $\Delta$ELPD (SE) | $p_{\text{loo}}$ (SE) | $\hat{k} > 0.7$ (%) | Weight |
 |:-----------|:-----------|:-----------|:-----------|:-----------|:-----------|
@@ -478,7 +478,7 @@ Crossing these three link function families with two dimensional structures (CT 
 
 Among the six models, `ct_gpcm_20` achieves the highest ELPD and the largest stacking weight (76%). This is expected: the GPCM allows both discrimination and thresholds to vary freely across items, providing the greatest flexibility. However, this flexibility comes at a cost. The PSIS-LOO diagnostics reveal that the two GPCM models produce the most problematic Pareto $\hat{k}$ values (9 and 7 observations with $\hat{k} > 0.7$, respectively). While these represent a very small proportion of the total ($< 0.3\%$) and are unlikely to substantially alter the overall ELPD estimates, they indicate that the LOO approximation is unreliable for these specific observations. The two GRM models are notably more stable, with only 1 and 2 problematic observations each.
 
-Both theoretical and practical considerations favour selecting a more stable model. Problematic Pareto $\hat{k}$ values signal that the model is highly sensitive to certain individual observations, meaning the leave-one-out posterior diverges substantially from the full posterior for these cases. As Vehtari et al. (2024) note, this is more likely to occur with less robust model specifications and highly influential observations.
+Both theoretical and practical considerations favour selecting a more stable model. Problematic Pareto $\hat{k}$ values signal that the model is highly sensitive to certain individual observations, meaning the leave-one-out posterior diverges substantially from the full posterior for these cases. As @vehtari2015pareto note, this is more likely to occur with less robust model specifications and highly influential observations.
 
 ### Resolving problematic Pareto $\hat{k}$ values
 
@@ -520,7 +520,7 @@ The calibrated comparison shows that the two GRM models are practically indistin
 
 ![Diagnostic Wright map for the final model (`bf_grm_20`). Top left: item difficulty with 95% CrIs. Top right: item discrimination (exponentiated scale). Bottom panels: person parameter estimates for the general factor and three dimension-specific factors, sorted by magnitude. \rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}](../figures/fig6_final_diagnostics.png){#fig-final-diag width="95%"}
 
-The item difficulty panel shows a well-distributed spread across the latent continuum with no abnormally wide credible intervals, confirming that the removal of the four misfitting items resolved the identification problems observed in Step 3. Discrimination values for the retained items are all above the $\alpha = 0.5$ threshold. The person parameter panels show approximately normal distributions for all four factors, with the general factor exhibiting the widest spread, consistent with its role as the dominant source of shared variance.
+The item difficulty panel shows a well-distributed spread across the latent continuum with no abnormally wide credible intervals, confirming that the removal of the four misfitting items resolved the identification problems observed in Step 3. Discrimination values for the retained items are all above the $\alpha = 0.5$ threshold. The person parameter panels show approximately normal distributions for all four factors, with the general factor representing the inclusive orientation shared across all items.
 
 @tbl-bf-grm-summary provides the key parameter estimates. All $\hat{R}$ values are at or below 1.01, indicating satisfactory convergence.
 
