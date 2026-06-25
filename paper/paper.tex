@@ -280,6 +280,8 @@ Manchester, Oxford Road, Manchester, England M13
 \makeatletter
 \@ifundefined{cslhangindent}{\newlength{\cslhangindent}}{}
 \makeatother
+\definecolor{revcol}{HTML}{1A1AFF}  % vivid blue; swap hex to taste (e.g. C2185B magenta)
+\newcommand{\rev}[1]{\textbf{\textcolor{revcol}{#1}}}  % bold + colour; set to {#1} to remove all marking
 \makeatletter
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \AtBeginDocument{%
@@ -514,6 +516,8 @@ providing sufficient regularisation to stabilise estimation
 distribution is then characterised via Markov chain Monte Carlo (MCMC)
 sampling, yielding draws from the joint distribution of all parameters
 rather than point estimates.
+\rev{MCMC is the most common but not the only option: brms also supports faster approximate alternatives such as variational inference, useful for very large samples where full MCMC becomes computationally demanding.}\footnote{\rev{Hamiltonian Monte Carlo, the MCMC variant used here, is accurate but computationally intensive: sampling time grows with both sample size and model complexity. For large datasets, variational inference offers a faster if approximate alternative}
+  (\citeproc{ref-kucukelbir2017automa}{Kucukelbir et al., 2017}).}
 
 This regularisation is particularly effective for the highly
 parameterised models that frequentist methods struggle with most.
@@ -539,12 +543,13 @@ other complex structures, demonstrating robust performance on an
 empirical dataset of only \(N = 121\); König et al.
 (\citeproc{ref-konig2022robust}{2022}) showed that a hierarchical
 Bayesian two-parameter logistic model with appropriately specified
-weakly informative priors can produce unbiased item and person parameter
-estimates even with \(N < 100\). More broadly, Bayesian estimation
-outperforms MML for multidimensional IRT at moderate sample sizes and is
-particularly beneficial when response categories are sparsely endorsed
-(\citeproc{ref-bainter2019impact}{Bainter \& Forster, 2019};
-\citeproc{ref-padgett2024regula}{Padgett et al., 2024}), a common
+weakly informative priors
+\rev{can recover item parameters with little bias even with $N < 100$, while person estimates remain stable under partial pooling.}\footnote{\rev{Person estimates from hierarchical models are partially pooled toward the population mean, so individual estimates carry some shrinkage bias. This is a deliberate feature of multilevel estimation: it trades a small bias for substantially reduced variance and preserves the relative ordering of persons, which is the primary target of measurement}
+  (\citeproc{ref-levy2016bayesi}{Levy, 2016}).} More broadly, Bayesian
+estimation outperforms MML for multidimensional IRT at moderate sample
+sizes and is particularly beneficial when response categories are
+sparsely endorsed (\citeproc{ref-bainter2019impact}{Bainter \& Forster,
+2019}; \citeproc{ref-padgett2024regula}{Padgett et al., 2024}), a common
 occurrence in Likert-scale instruments where extreme categories receive
 few responses.
 
@@ -583,12 +588,14 @@ certain complex modelling strategies, such as the explanatory
 multidimensional IRT framework of Kleinsasser et al.
 (\citeproc{ref-kleinsasser2024person}{2024}) where person-level
 regression models are estimated simultaneously within the IRT
-likelihood, are not currently specifiable. Nevertheless, for the class
-of models covered in this tutorial, \texttt{brms} offers a compelling
-combination of one-stop integration and concise, transferable syntax.
-Within a single formula interface, researchers can specify multiple
-ordinal model families (cumulative and adjacent-category links),
-multidimensional structures (correlated-traits and bi-factor),
+likelihood, are not currently specifiable.
+\rev{This limitation concerns \emph{jointly modelled latent regressions}: correlations among the latent traits themselves are supported through the random-effect covariance structure, as we use for the correlated-traits model below.}\footnote{\rev{See, e.g., the planned latent-variable features discussed at}
+  \url{https://github.com/paul-buerkner/brms/issues/304}.} Nevertheless,
+for the class of models covered in this tutorial, \texttt{brms} offers a
+compelling combination of one-stop integration and concise, transferable
+syntax. Within a single formula interface, researchers can specify
+multiple ordinal model families (cumulative and adjacent-category
+links), multidimensional structures (correlated-traits and bi-factor),
 item-specific discrimination via distributional regression, covariates,
 and differential item functioning, all with built-in model comparison
 through approximate leave-one-out cross-validation
@@ -652,12 +659,13 @@ parameter estimates and model fit for the same data. Bürkner
 models can be specified in \texttt{brms} using its distributional
 regression syntax, where discrimination is introduced via
 \texttt{disc\ \textasciitilde{}\ 1\ +\ (1\ \textbar{}\ item)} and the
-link function is controlled through the family argument. Importantly,
-freeing discrimination is not merely a matter of model flexibility: as
-we demonstrate in the workflow, it also serves a diagnostic purpose,
-revealing which items contribute meaningful information and whether
-threshold anomalies arise from model constraints rather than data
-problems.
+link function is controlled through the family argument.
+\rev{This follows the standard brms parameterisation, in which item discriminations are modelled as a by-item random effect and thus partially pooled toward a common mean, rather than estimated as unpooled fixed parameters; in small samples this regularises the estimates at the cost of mild shrinkage.}
+Importantly, freeing discrimination is not merely a matter of model
+flexibility: as we demonstrate in the workflow, it also serves a
+diagnostic purpose, revealing which items contribute meaningful
+information and whether threshold anomalies arise from model constraints
+rather than data problems.
 
 The choice of ordinal model family is crossed with the choice of
 dimensional structure. Instruments designed with subscale structure
@@ -760,8 +768,10 @@ adjustments generally indicates a specification problem rather than a
 tuning problem. For the more computationally demanding models, we used
 \texttt{cmdstanr} (\citeproc{ref-gabry2025cmdsta}{Gabry et al., 2025})
 as the backend in place of the default \texttt{rstan}, which provided
-substantial speed improvements; all code, including backend
-configuration, is available in the companion repository.
+substantial speed improvements.
+\rev{Within-chain parallelisation via \texttt{threads = threading()} provides further speed-ups on the most demanding models.}
+All code, including backend configuration, is available in the companion
+repository.
 
 \subsection{Model comparison: LOO-CV}\label{model-comparison-loo-cv}
 
@@ -802,6 +812,10 @@ ELPD differences as a matter of practice: a model with the best ELPD but
 many problematic \(\hat{k}\) values may be a less trustworthy choice
 than a slightly worse-fitting model with clean diagnostics.
 
+\rev{As a complementary cue for model selection, we also report the LOO-based stacking weights}
+(\citeproc{ref-yao2018using}{Yao et al.,
+2018})\rev{: a model that receives almost all of the weight corroborates its selection.}
+
 An important scope condition applies throughout: LOO-CV is only valid
 for comparing models fitted to the same set of observations with the
 same response variable. This constraint is relevant at several points in
@@ -825,8 +839,8 @@ item and person parameters on scale. Based on Bürkner
 (\citeproc{ref-burkner2021bayesi}{2021}), our versions differ from the
 traditional format in layout (side-by-side panels rather than a single
 vertical axis) and in the inclusion of discrimination estimates as a
-separate panel. The credible intervals are a distinctly Bayesian
-addition that makes parameter-level uncertainty directly visible.
+separate panel.
+\rev{The credible intervals of the posterior make parameter-level uncertainty directly visible.}
 
 In terms of diagnostic interpretation, item difficulty does not lend
 itself to a strict cutoff criterion. What matters is that items are
@@ -843,23 +857,22 @@ considered a poor discriminator. In substantive terms, this means that
 responses to such an item are largely independent of the latent trait
 and the item contributes minimal measurement information.
 
-It is worth noting that classical item-fit statistics (e.g., infit,
-outfit, \(S\)-\(X^2\)) do not have a direct Bayesian counterpart. Bohn
-et al. (\citeproc{ref-bohn2025previc}{2025}) propose an approach in
-which fit statistics are computed separately for each posterior draw and
-then aggregated, but our replication of their method found that this
-requires substantial computational resources and produces results nearly
-identical to those obtained from standard frequentist item-fit routines
-(e.g., using \texttt{TAM} package).\footnote{A replication and
-  optimisation of the Bohn et al. (\citeproc{ref-bohn2025previc}{2025})
-  item-fit approach is available at
-  \url{https://github.com/lukezed/previc-optimization-demo}.} A more
-natively Bayesian approach to item-level diagnostics is prior/posterior
-predictive checking (ppc), as demonstrated by Winter et al.
-(\citeproc{ref-winter2025tutoria}{2025}) using prior/posterior
-predictive \(p\)-values (ppp). We do not incorporate posterior
-predictive item checks in this tutorial, though they represent a
-valuable extension.
+\rev{Item-fit statistics (e.g., infit, outfit, $S$-$X^2$) are not inherently frequentist: they also have posterior-predictive Bayesian forms.}
+Bohn et al. (\citeproc{ref-bohn2025previc}{2025})
+\rev{compute such statistics for each posterior draw and aggregate them, and the \texttt{easyRaschBayes} package}
+(\citeproc{ref-johansson2026easyra}{Johansson, 2026})
+\rev{implements posterior-predictive infit/outfit directly for \texttt{brms} models, summarising item fit through posterior predictive $p$-values (ppp). These are a special case of the broader posterior predictive checking (ppc) approach to item-level diagnostics}
+(\citeproc{ref-winter2025tutoria}{Winter et al., 2025}).
+\rev{We treat an item as underfitting when its infit mean-square exceeds 1.3 and, equivalently, its posterior predictive $p$ falls below 0.05, both signalling more response noise than the model predicts; the opposite tail (a low mean-square, $p$ near 1) reflects overly predictable responses and is not treated as misfit. We use these statistics as a complementary cross-check when freeing discrimination (Step 3).}
+
+\subsection{\texorpdfstring{\rev{Reliability}}{}}\label{section}
+
+\rev{For the final model we summarise measurement precision with reliability coefficients. Because the instrument is multidimensional, no single latent dimension is meant to carry the measurement alone, so we report two complementary views. Model-based omega coefficients}
+(\citeproc{ref-mcdonald2013test}{McDonald, 2013};
+\citeproc{ref-rodriguez2016evalua}{Rodriguez et al., 2016})
+\rev{describe the total score: $\omega_{\text{total}}$ is the proportion of total-score variance that is true-score (common) variance, while $\omega_{\text{H}}$ and the explained common variance (ECV) quantify how much of that is attributable to the general factor. Separately, the per-dimension reliability of the person estimates, computed through the relative measurement uncertainty (RMU) of}
+Bignardi et al.
+(\citeproc{ref-bignardi2025genera}{2025})\rev{, indexes how precisely individuals can be placed on each latent dimension; under partial pooling at small samples these are conservative lower bounds. Together they separate the reliability of the instrument as a whole from the precision of any single subscale. All coefficients are computed over the full posterior, yielding credible intervals.}
 
 \subsection{Differential item
 functioning}\label{differential-item-functioning}
@@ -1065,7 +1078,8 @@ distributions across the original 5-point scale.
 \begin{figure}
 
 \caption{\label{fig-response-dist}Item-level response distributions
-across the original 5-point scale, coloured by subscale dimension.}
+across the original 5-point scale, coloured by subscale dimension.
+\rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}}
 
 \centering{
 
@@ -1185,7 +1199,8 @@ Overall, item-person targeting appears adequate.
 
 \caption{\label{fig-wright-map-rsm}Wright map from \texttt{merge\_rsm}.
 Left: item difficulty estimates with 95\% CrIs. Right: person ability
-estimates sorted by magnitude.}
+estimates sorted by magnitude.
+\rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}}
 
 \centering{
 
@@ -1404,7 +1419,8 @@ discrimination (right) estimates from the \texttt{ct\_grsm} (top) and
 \texttt{bf\_grsm} (bottom). Discrimination values are shown on the
 exponentiated scale (\(e^\alpha\)). The dashed line at 0.5 marks a
 conventional threshold below which items are considered poor
-discriminators.}
+discriminators.
+\rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}}
 
 \centering{
 
@@ -1423,17 +1439,86 @@ about mathematics'' subscale and share the same reverse-coded formalist
 orientation (e.g., ``Mathematics is a collection of rules and
 procedures''). Their discrimination estimates fall well below the
 conventional \(\alpha = 0.5\) threshold for `poor' items
-(\citeproc{ref-embretson2013itema}{Embretson \& Reise, 2013}),This
+(\citeproc{ref-embretson2013itema}{Embretson \& Reise, 2013}). This
 indicates that item responses are virtually independent of the measured
 latent trait: a respondent's location on the latent continuum exerts
 little to no influence on their probability of selecting a given
 category. Their difficulty estimates are simultaneously problematic with
 very wide CrIs, meaning they are poorly identified by the data and
-nearly all respondents find it easy to endorse the exclusive end. While
-this problematic pattern was invisible under the RSM. Because the
-equal-discrimination assumption the poor measurement properties were
-diluted across the shared parameter structure rather than localised to
-specific items.
+nearly all respondents find it easy to endorse the exclusive end. This
+pattern was invisible under the RSM, because the equal-discrimination
+assumption diluted these poor measurement properties across the shared
+parameter structure rather than localising them to specific items.
+
+\rev{Our removal of all four items rests on the freed-discrimination analysis above. As an independent cross-check, the Bayesian posterior-predictive infit and outfit introduced earlier, computed on the RSM (}\texttt{merge\_rsm}\rev{), flag three of the same four items (}Table~\ref{tbl-itemfit}\rev{): Bm\_1\_r, Bm\_2\_r, and Bm\_4\_r exceed the underfit cutoffs (infit mean-square above 1.3, posterior predictive p below 0.05) and stand apart from the rest by a clear gap. Bm\_3\_r is the one point of difference: it passes item fit and would be retained under a pure Rasch screen, and is exposed only once discrimination is freed. We therefore take the discrimination evidence as decisive and remove all four.}
+
+\begin{table}
+
+{\caption{{Posterior-predictive infit and outfit for all 24 items at the
+RSM stage (\texttt{merge\_rsm}), ordered by infit. An item is flagged as
+underfitting when its infit mean-square exceeds 1.3 and its posterior
+predictive \emph{p} falls below 0.05 (both indicating more response
+noise than the model predicts): Bm\_1\_r, Bm\_2\_r, and Bm\_4\_r meet
+this and are separated from the rest by a clear gap. The opposite tail
+(low mean-square, \emph{p} near 1, e.g.~Bp\_3) reflects overly
+predictable responses and is not treated as misfit. The \emph{p}-values
+are Monte Carlo posterior-predictive estimates and vary slightly across
+runs, although the resulting classification is
+stable.}{\label{tbl-itemfit}}}
+\vspace{-20pt}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Item
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Infit MNSQ
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Infit \emph{ppp}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Outfit MNSQ
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Outfit \emph{ppp}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Bm\_2\_r} & \(\mathbf{1.64}\) & \(\mathbf{0.022}\) &
+\(\mathbf{1.48}\) & \(\mathbf{0.115}\) \\
+\textbf{Bm\_4\_r} & \(\mathbf{1.38}\) & \(\mathbf{0.002}\) &
+\(\mathbf{1.33}\) & \(\mathbf{0.025}\) \\
+\textbf{Bm\_1\_r} & \(\mathbf{1.34}\) & \(\mathbf{0.039}\) &
+\(\mathbf{1.29}\) & \(\mathbf{0.126}\) \\
+Bm\_3\_r & \(1.09\) & \(0.316\) & \(1.17\) & \(0.238\) \\
+Bl\_11\_r & \(1.09\) & \(0.174\) & \(1.08\) & \(0.213\) \\
+Bl\_6\_r & \(1.09\) & \(0.190\) & \(1.06\) & \(0.312\) \\
+Bl\_10\_r & \(1.09\) & \(0.186\) & \(1.08\) & \(0.216\) \\
+Bl\_9\_r & \(1.08\) & \(0.207\) & \(1.07\) & \(0.238\) \\
+Bl\_2 & \(1.07\) & \(0.315\) & \(1.17\) & \(0.133\) \\
+Bp\_2\_r & \(1.02\) & \(0.434\) & \(1.00\) & \(0.501\) \\
+Bm\_5 & \(1.02\) & \(0.406\) & \(1.05\) & \(0.337\) \\
+Bm\_8 & \(1.01\) & \(0.459\) & \(1.06\) & \(0.344\) \\
+Bl\_7\_r & \(1.00\) & \(0.494\) & \(1.01\) & \(0.446\) \\
+Bl\_8\_r & \(0.98\) & \(0.570\) & \(0.99\) & \(0.556\) \\
+Bp\_1\_r & \(0.97\) & \(0.608\) & \(0.98\) & \(0.546\) \\
+Bl\_5 & \(0.94\) & \(0.650\) & \(0.99\) & \(0.504\) \\
+Bl\_3\_r & \(0.94\) & \(0.716\) & \(0.93\) & \(0.739\) \\
+Bm\_6 & \(0.89\) & \(0.786\) & \(0.93\) & \(0.680\) \\
+Bp\_5 & \(0.88\) & \(0.795\) & \(0.94\) & \(0.638\) \\
+Bm\_7 & \(0.82\) & \(0.909\) & \(0.87\) & \(0.817\) \\
+Bl\_4\_r & \(0.81\) & \(0.981\) & \(0.81\) & \(0.968\) \\
+Bl\_1\_r & \(0.80\) & \(0.980\) & \(0.81\) & \(0.955\) \\
+Bp\_4 & \(0.67\) & \(0.992\) & \(0.74\) & \(0.973\) \\
+Bp\_3 & \(0.62\) & \(0.999\) & \(0.64\) & \(0.996\) \\
+\end{longtable}
+
+\end{table}
 
 \subsection{Step 4: Item removal and link function
 comparison}\label{step-4-item-removal-and-link-function-comparison}
@@ -1456,15 +1541,15 @@ the measurement model. After removal, the reduced dataset
 
 With the four misfitting items removed, thresholds under both
 \texttt{ct\_grsm\_20} and \texttt{bf\_grsm\_20} are now in monotonic
-order as showed in Table~\ref{tbl-grsm-20-summary}.
-\texttt{ct\_grsm\_20} estimates moderate to strong correlations among
-the three dimensions, with the strongest association between mathematics
-and pedagogy beliefs (\(r = 0.51\), 95\% CrI \([0.31, 0.68]\)),
-suggesting that teachers who view mathematics as a creative and applied
-discipline also tend to be more receptive to innovative teaching
-approaches. \texttt{bf\_grsm\_20} also successfully separates a general
-inclusive belief factor (SD \(= 1.73\), 95\% CrI \([0.82, 2.98]\)) from
-dimension-specific residuals.
+order as shown in Table~\ref{tbl-grsm-20-summary}. \texttt{ct\_grsm\_20}
+estimates moderate to strong correlations among the three dimensions,
+with the strongest association between mathematics and pedagogy beliefs
+(\(r = 0.51\), 95\% CrI \([0.31, 0.68]\)), suggesting that teachers who
+view mathematics as a creative and applied discipline also tend to be
+more receptive to innovative teaching approaches. \texttt{bf\_grsm\_20}
+also successfully separates a general inclusive belief factor (SD
+\(= 1.73\), 95\% CrI \([0.82, 2.98]\)) from dimension-specific
+residuals.
 
 \begin{table}
 
@@ -1584,7 +1669,7 @@ selection}\label{model-comparison-and-selection}
 Crossing these three link function families with two dimensional
 structures (CT and BF) yields six candidate models, all fitted to the
 same 20-item, 4-category dataset. Table~\ref{tbl-loo-final-compare}
-shows the comparsion results.
+shows the comparison results.
 
 \begin{table}
 
@@ -1654,9 +1739,10 @@ Both theoretical and practical considerations favour selecting a more
 stable model. Problematic Pareto \(\hat{k}\) values signal that the
 model is highly sensitive to certain individual observations, meaning
 the leave-one-out posterior diverges substantially from the full
-posterior for these cases. As Vehtari et al.~(2024) note, this is more
-likely to occur with less robust model specifications and highly
-influential observations.
+posterior for these cases. As Vehtari et al.
+(\citeproc{ref-vehtari2015pareto}{2015}) note, this is more likely to
+occur with less robust model specifications and highly influential
+observations.
 
 \subsubsection{\texorpdfstring{Resolving problematic Pareto \(\hat{k}\)
 values}{Resolving problematic Pareto \textbackslash hat\{k\} values}}\label{resolving-problematic-pareto-hatk-values}
@@ -1734,7 +1820,8 @@ general belief factor and the three dimension-specific residual factors
 (\texttt{bf\_grm\_20}). Top left: item difficulty with 95\% CrIs. Top
 right: item discrimination (exponentiated scale). Bottom panels: person
 parameter estimates for the general factor and three dimension-specific
-factors, sorted by magnitude.}
+factors, sorted by magnitude.
+\rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}}
 
 \centering{
 
@@ -1750,8 +1837,8 @@ that the removal of the four misfitting items resolved the
 identification problems observed in Step 3. Discrimination values for
 the retained items are all above the \(\alpha = 0.5\) threshold. The
 person parameter panels show approximately normal distributions for all
-four factors, with the general factor exhibiting the widest spread,
-consistent with its role as the dominant source of shared variance.
+four factors, with the general factor representing the inclusive
+orientation shared across all items.
 
 Table~\ref{tbl-bf-grm-summary} provides the key parameter estimates. All
 \(\hat{R}\) values are at or below 1.01, indicating satisfactory
@@ -1821,6 +1908,38 @@ about teaching approaches. The general factor SD (\(1.76\)) falls
 between the two, confirming that all four factors capture meaningful
 individual differences.
 
+\rev{The reliability of the final model supports the bi-factor specification (}Table~\ref{tbl-reliability}\rev{). The total score is highly reliable ($\omega_{\text{total}} = 0.90$), and the general factor accounts for most of its reliable variance ($\omega_{\text{H}} = 0.61$, ECV $= 0.68$). Thus, although the domain-specific factors capture meaningful variation in their own right, at the level of the total score the instrument is dominated by a single inclusive-belief construct. The per-dimension person reliabilities are accordingly moderate and weakest for the pedagogy-specific factor, which is why the instrument is properly scored and interpreted as a whole rather than as independent subscales.}
+
+\begin{table}
+
+{\caption{{Reliability of the final model (\texttt{bf\_grm\_20}),
+computed over the full posterior. Total-score coefficients are
+model-based omega (\citeproc{ref-rodriguez2016evalua}{Rodriguez et al.,
+2016}); per-dimension entries are the relative measurement uncertainty
+(RMU) reliability with its 95\% HDCI.}{\label{tbl-reliability}}}
+\vspace{-20pt}}
+
+\begin{longtable}[]{@{}lrc@{}}
+\toprule\noalign{}
+Quantity & Estimate & 95\% interval \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Total-score reliability} & & \\
+\(\omega_{\text{total}}\) & \(0.90\) & \([0.87, 0.92]\) \\
+\(\omega_{\mathrm{H}}\) (general factor) & \(0.61\) &
+\([0.48, 0.72]\) \\
+ECV (general factor) & \(0.68\) & \([0.55, 0.79]\) \\
+\textbf{Per-dimension reliability (RMU)} & & \\
+General (inclusive equity belief) & \(0.61\) & \([0.50, 0.71]\) \\
+Mathematics-specific & \(0.62\) & \([0.53, 0.71]\) \\
+Learners-specific & \(0.55\) & \([0.43, 0.66]\) \\
+Pedagogy-specific & \(0.32\) & \([0.15, 0.50]\) \\
+\end{longtable}
+
+\end{table}
+
 \subsection{Step 5: Differential item functioning and
 covariates}\label{step-5-differential-item-functioning-and-covariates}
 
@@ -1833,9 +1952,7 @@ endorsing a given category, which can bias group comparisons.
 
 One intuitive approach is to specify
 \texttt{(0\ +\ gender\ \textbar{}\ item)} alongside \texttt{gender} as a
-fixed effect. This estimates separate item-level random effects for
-males and females, giving us distinct posterior distributions of item
-difficulty for each group:
+fixed effect:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1852,29 +1969,16 @@ difficulty for each group:
 \end{Highlighting}
 \end{Shaded}
 
-The benefit of this parameterisation is that we can directly inspect how
-males and females perform on each item. However, determining whether the
-male-female difference is statistically meaningful is less
-straightforward, because we do not have a single posterior for the
-difference itself. Bohn et al. (\citeproc{ref-bohn2025previc}{2025})
-offers an engineering-level approximation: treating DIF as a diagnostic
-question and flagging items where the male and female posteriors are
-non-overlapping. Panel A of Figure~\ref{fig-dif} shows diagnostic for
-all 20 items based on this standard, and all items pass the DIF test. It
-should be noted, however, that this is an overly optimistic diagnostic:
-even when two posterior distributions overlap, the difference between
-them can still be credible.\footnote{This is analogous to a situation in
-  frequentist inference where two confidence intervals overlap but the
-  difference between the two means can be nonetheless statistically
-  significant.}
+\rev{In this notation the variable after the vertical bar is the grouping factor; here it is }\texttt{item}\rev{, so each item carries its own male and female level (jointly bivariate normal). The benefit of }\texttt{(0 + gender | item)}
+\rev{ is that we can read the two group posteriors directly. Following}
+Bohn et al. (\citeproc{ref-bohn2025previc}{2025})\rev{, Panel A of}
+Figure~\ref{fig-dif}
+\rev{flags an item when its male and female 95\% credible intervals do not overlap, and none of the 20 items is. This heuristic is convenient but not strict: overlapping intervals can still hide a credible difference.}\footnote{This
+  is analogous to a situation in frequentist inference where two
+  confidence intervals overlap but the difference between the two means
+  can be nonetheless statistically significant.}
 
-A more straightforward approach is to model DIF directly by specifying
-\texttt{(1\ +\ gender\ \textbar{}\ item)}, which treats one category as
-the baseline and estimates the male-minus-female deviation for each
-item. An item exhibits credible DIF when the 95\% CrI for this deviation
-falls entirely on one side of zero. We extend this to include group
-variables simultaneously, testing for DIF across both gender and
-district:
+\rev{A stricter test models the difference itself. The }\texttt{(1 + gender | item)}\rev{ coding, a reparameterisation of the same model, gives a posterior for the male-minus-female deviation per item; we flag DIF when its 95\% CrI excludes zero, and extend this to gender and district jointly (Panel B):}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1893,14 +1997,9 @@ district:
 \end{Highlighting}
 \end{Shaded}
 
-Figure~\ref{fig-dif} presents the item-level DIF results. Panel A shows
-the posterior overlap diagnostic from \texttt{bf\_grm\_dif}, and Panel B
-shows the item-level gender DIF effects (log-odds difference, male minus
-female) from \texttt{bf\_grm\_dif2}; all 20 items have 95\% CrIs that
-include zero. Panel C shows the district DIF effects (Districts 2 and 3
-relative to District 1), and again no item exhibits a credible DIF
-effect. The instrument thus appears to function consistently across
-gender and district subgroups.
+Figure~\ref{fig-dif}
+\rev{presents the full DIF analysis, and the conservative overlap screen (Panel A) and the stricter difference test agree. In Panel B every item's gender DIF effect (log-odds, male minus female, from }\texttt{bf\_grm\_dif2}
+\rev{) has a 95\% CrI that includes zero, as does every district effect in Panel C (Districts 2 and 3 relative to District 1). The instrument thus appears to function consistently across gender and district subgroups.}
 
 \begin{figure}
 
@@ -1908,7 +2007,8 @@ gender and district subgroups.
 analysis. Panel A: posterior overlap diagnostic for gender
 \texttt{bf\_grm\_dif}. Panel B: item-level gender DIF effects from
 \texttt{bf\_grm\_dif2}. Panel C: item-level district DIF effects. Panel
-D: Estimated category response probabilities by district.}
+D: Estimated category response probabilities by district.
+\rev{Item codes: Bm = beliefs about mathematics, Bl = beliefs about learners, Bp = beliefs about pedagogy; the suffix \_r marks reverse-coded items (full wording in Appendix B).}}
 
 \centering{
 
@@ -2180,6 +2280,11 @@ maximum likelihood is unsuitable. \emph{Structural Equation Modeling: A
 Multidisciplinary Journal}, \emph{26}(1), 80--93.
 \url{https://doi.org/10.1080/10705511.2018.1505521}
 
+\bibitem[\citeproctext]{ref-bignardi2025genera}
+Bignardi, G., Kievit, R., \& Bürkner, P.-. C. (2025). \emph{A general
+method for estimating reliability using {Bayesian Measurement
+Uncertainty}}. PsyArXiv. \url{https://doi.org/10.31234/osf.io/h54k8_v1}
+
 \bibitem[\citeproctext]{ref-boeck2012irtreea}
 Boeck, P. D., \& Partchev, I. (2012). {IRTrees}: Tree-based item
 response models of the {GLMM} family. \emph{Journal of Statistical
@@ -2283,6 +2388,10 @@ for estimation of item parameters in the multidimensional graded
 response model. \emph{Frontiers in Psychology}, \emph{7}.
 \url{https://doi.org/10.3389/fpsyg.2016.00109}
 
+\bibitem[\citeproctext]{ref-johansson2026easyra}
+Johansson, M. (2026). \emph{{easyRaschBayes}: {Bayesian} rasch analysis
+using 'brms'} {[}Manual{]}.
+
 \bibitem[\citeproctext]{ref-kleinsasser2024person}
 Kleinsasser, M. J., Mistry, R., Hsieh, H.-F., McCarthy, W. J., \&
 Raghunathan, T. (2024). Person explanatory multidimensional item
@@ -2296,6 +2405,15 @@ of the optimized hierarchical two-parameter logistic {IRT} model for
 small-sample item calibration. \emph{Behavior Research Methods},
 \emph{55}(8), 3965--3983.
 \url{https://doi.org/10.3758/s13428-022-02000-5}
+
+\bibitem[\citeproctext]{ref-kucukelbir2017automa}
+Kucukelbir, A., Tran, D., Ranganath, R., Gelman, A., \& Blei, D. M.
+(2017). Automatic differentiation variational inference. \emph{Journal
+of Machine Learning Research}, \emph{18}, 1--45.
+
+\bibitem[\citeproctext]{ref-levy2016bayesi}
+Levy, R. (2016). \emph{Bayesian psychometric modeling}. CRC Press,
+Taylor \& Francis Group.
 
 \bibitem[\citeproctext]{ref-lewandowski2009genera}
 Lewandowski, D., Kurowicka, D., \& Joe, H. (2009). Generating random
@@ -2318,6 +2436,10 @@ response theory. \emph{Educational and Psychological Measurement},
 Masters, G. N. (1982). A rasch model for partial credit scoring.
 \emph{Psychometrika}, \emph{47}(2), 149--174.
 \url{https://doi.org/10.1007/BF02296272}
+
+\bibitem[\citeproctext]{ref-mcdonald2013test}
+McDonald, R. P. (2013). \emph{Test theory: A unified treatment} (0th
+ed.). Psychology Press. \url{https://doi.org/10.4324/9781410601087}
 
 \bibitem[\citeproctext]{ref-mcelreath2018statisa}
 McElreath, R. (2018). \emph{Statistical rethinking: {A} bayesian course
@@ -2356,6 +2478,12 @@ International Workshop on Distributed Statistical Computing},
 Robitzsch, A., Kiefer, T., \& Wu, M. (2013). \emph{{TAM}: Test analysis
 modules} (pp. 4.3--25). Comprehensive R Archive Network.
 \url{https://doi.org/10.32614/CRAN.package.TAM}
+
+\bibitem[\citeproctext]{ref-rodriguez2016evalua}
+Rodriguez, A., Reise, S. P., \& Haviland, M. G. (2016). Evaluating
+bifactor models: {Calculating} and interpreting statistical indices.
+\emph{Psychological Methods}, \emph{21}(2), 137.
+\url{https://doi.org/10.1037/met0000045}
 
 \bibitem[\citeproctext]{ref-rokeach1968theorya}
 Rokeach, M. (1968). A theory of organization and change within
@@ -2423,6 +2551,12 @@ Stress Inventory-Short Form}. \emph{Journal of School Psychology},
 
 \bibitem[\citeproctext]{ref-wright1979best}
 Wright, B. D., \& Stone, M. H. (1979). \emph{Best test design}.
+
+\bibitem[\citeproctext]{ref-yao2018using}
+Yao, Y., Vehtari, A., Simpson, D., \& Gelman, A. (2018). Using stacking
+to average bayesian predictive distributions (with discussion).
+\emph{Bayesian Analysis}, \emph{13}(3).
+\url{https://doi.org/10.1214/17-BA1091}
 
 \bibitem[\citeproctext]{ref-zhang2025Belief}
 Zhang, C. (2025). \emph{From belief to practice: Understanding teachers'
@@ -2667,6 +2801,89 @@ identity matrix. \\
 \end{longtable}
 
 \end{table}
+
+\normalsize
+
+\subsection{brms code for all fitted
+models}\label{brms-code-for-all-fitted-models}
+
+For quick reference, the listing below gives the brms specification of
+every model fitted in this study. It is deliberately minimal: the
+\texttt{bf()} model formulas, then the \texttt{brm()} calls whose
+\texttt{family} and \texttt{data} arguments set the models apart (the
+\texttt{family} chooses the link / threshold form, as in
+Table~\ref{tbl-models}). Priors are weakly informative as in
+Table~\ref{tbl-priors}; computational settings (chains, iterations,
+\texttt{adapt\_delta}, backend, etc.) are omitted. Complete runnable
+code is in the companion repository.
+
+\small
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Model formulas (random effects encode the dimensional structure)}
+
+\CommentTok{\# Unidimensional}
+\NormalTok{bf\_uni }\OtherTok{\textless{}{-}} \FunctionTok{bf}\NormalTok{(response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ id))}
+
+\CommentTok{\# Correlated{-}traits MIRT (three correlated dimensions)}
+\NormalTok{bf\_ct }\OtherTok{\textless{}{-}} \FunctionTok{bf}\NormalTok{(response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_m }\SpecialCharTok{+}\NormalTok{ dim\_l }\SpecialCharTok{+}\NormalTok{ dim\_p }\SpecialCharTok{|}\NormalTok{ id))}
+
+\CommentTok{\# Bi{-}factor MIRT (general factor + orthogonal specific factors)}
+\NormalTok{bf\_bf }\OtherTok{\textless{}{-}} \FunctionTok{bf}\NormalTok{(}
+\NormalTok{  response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}
+\NormalTok{    (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_m }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_l }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_p }\SpecialCharTok{||}\NormalTok{ id))}
+
+\CommentTok{\# 2PL variants add an item{-}specific discrimination submodel}
+\NormalTok{bf\_ct\_2pl }\OtherTok{\textless{}{-}} \FunctionTok{bf}\NormalTok{(}
+\NormalTok{  response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_m }\SpecialCharTok{+}\NormalTok{ dim\_l }\SpecialCharTok{+}\NormalTok{ dim\_p }\SpecialCharTok{|}\NormalTok{ id),}
+\NormalTok{  disc }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item))}
+\NormalTok{bf\_bf\_2pl }\OtherTok{\textless{}{-}} \FunctionTok{bf}\NormalTok{(}
+\NormalTok{  response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ id) }\SpecialCharTok{+}
+\NormalTok{    (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_m }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_l }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_p }\SpecialCharTok{||}\NormalTok{ id),}
+\NormalTok{  disc }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item))}
+
+\CommentTok{\# GPCM variants use item{-}specific thresholds via cs(1)}
+\NormalTok{bf\_ct\_gpcm }\OtherTok{\textless{}{-}} \FunctionTok{bf}\NormalTok{(}
+\NormalTok{  response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\FunctionTok{cs}\NormalTok{(}\DecValTok{1}\NormalTok{) }\SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_m }\SpecialCharTok{+}\NormalTok{ dim\_l }\SpecialCharTok{+}\NormalTok{ dim\_p }\SpecialCharTok{|}\NormalTok{ id),}
+\NormalTok{  disc }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item))}
+\NormalTok{bf\_bf\_gpcm }\OtherTok{\textless{}{-}} \FunctionTok{bf}\NormalTok{(}
+\NormalTok{  response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\FunctionTok{cs}\NormalTok{(}\DecValTok{1}\NormalTok{) }\SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ id) }\SpecialCharTok{+}
+\NormalTok{    (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_m }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_l }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_p }\SpecialCharTok{||}\NormalTok{ id),}
+\NormalTok{  disc }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item))}
+
+\CommentTok{\# DIF models add group covariates with item{-}level random slopes}
+\NormalTok{bf\_dif }\OtherTok{\textless{}{-}} \FunctionTok{bf}\NormalTok{(}
+\NormalTok{  response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ gender }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ gender }\SpecialCharTok{|}\NormalTok{ item) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ id) }\SpecialCharTok{+}
+\NormalTok{    (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_m }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_l }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_p }\SpecialCharTok{||}\NormalTok{ id),}
+\NormalTok{  disc }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item))}
+\NormalTok{bf\_dif2 }\OtherTok{\textless{}{-}} \FunctionTok{bf}\NormalTok{(}
+\NormalTok{  response }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ gender }\SpecialCharTok{+}\NormalTok{ District }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ gender }\SpecialCharTok{+}\NormalTok{ District }\SpecialCharTok{||}\NormalTok{ item) }\SpecialCharTok{+}
+\NormalTok{    (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_m }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_l }\SpecialCharTok{||}\NormalTok{ id) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{0} \SpecialCharTok{+}\NormalTok{ dim\_p }\SpecialCharTok{||}\NormalTok{ id),}
+\NormalTok{  disc }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ item))}
+
+\CommentTok{\# Fitted models. acat = adjacent{-}category, cuml = cumulative logit.}
+\CommentTok{\#   RSM  = acat, no disc        GRSM = acat + disc}
+\CommentTok{\#   GPCM = acat + cs() + disc   GRM  = cuml + disc}
+\NormalTok{acat }\OtherTok{\textless{}{-}} \FunctionTok{brmsfamily}\NormalTok{(}\StringTok{"acat"}\NormalTok{, }\StringTok{"logit"}\NormalTok{)}
+\NormalTok{cuml }\OtherTok{\textless{}{-}} \FunctionTok{brmsfamily}\NormalTok{(}\StringTok{"cumulative"}\NormalTok{, }\StringTok{"logit"}\NormalTok{)}
+
+\NormalTok{null\_rsm    }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_uni,     }\AttributeTok{family =}\NormalTok{ acat, }\AttributeTok{data =}\NormalTok{ data\_1) }\CommentTok{\# 5{-}category}
+\NormalTok{merge\_rsm   }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_uni,     }\AttributeTok{family =}\NormalTok{ acat, }\AttributeTok{data =}\NormalTok{ data\_2) }\CommentTok{\# 4{-}category}
+\NormalTok{ct\_rsm      }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_ct,      }\AttributeTok{family =}\NormalTok{ acat, }\AttributeTok{data =}\NormalTok{ data\_2)}
+\NormalTok{bf\_rsm      }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_bf,      }\AttributeTok{family =}\NormalTok{ acat, }\AttributeTok{data =}\NormalTok{ data\_2)}
+\NormalTok{ct\_grsm     }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_ct\_2pl,  }\AttributeTok{family =}\NormalTok{ acat, }\AttributeTok{data =}\NormalTok{ data\_2)}
+\NormalTok{bf\_grsm     }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_bf\_2pl,  }\AttributeTok{family =}\NormalTok{ acat, }\AttributeTok{data =}\NormalTok{ data\_2)}
+\NormalTok{ct\_grsm\_20  }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_ct\_2pl,  }\AttributeTok{family =}\NormalTok{ acat, }\AttributeTok{data =}\NormalTok{ data\_3) }\CommentTok{\# 4 removed}
+\NormalTok{bf\_grsm\_20  }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_bf\_2pl,  }\AttributeTok{family =}\NormalTok{ acat, }\AttributeTok{data =}\NormalTok{ data\_3)}
+\NormalTok{ct\_gpcm\_20  }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_ct\_gpcm, }\AttributeTok{family =}\NormalTok{ acat, }\AttributeTok{data =}\NormalTok{ data\_3)}
+\NormalTok{bf\_gpcm\_20  }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_bf\_gpcm, }\AttributeTok{family =}\NormalTok{ acat, }\AttributeTok{data =}\NormalTok{ data\_3)}
+\NormalTok{ct\_grm\_20   }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_ct\_2pl,  }\AttributeTok{family =}\NormalTok{ cuml, }\AttributeTok{data =}\NormalTok{ data\_3)}
+\NormalTok{bf\_grm\_20   }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_bf\_2pl,  }\AttributeTok{family =}\NormalTok{ cuml, }\AttributeTok{data =}\NormalTok{ data\_3) }\CommentTok{\# final}
+\NormalTok{bf\_grm\_dif  }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_dif,     }\AttributeTok{family =}\NormalTok{ cuml, }\AttributeTok{data =}\NormalTok{ data\_3)}
+\NormalTok{bf\_grm\_dif2 }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(bf\_dif2,    }\AttributeTok{family =}\NormalTok{ cuml, }\AttributeTok{data =}\NormalTok{ data\_3)}
+\end{Highlighting}
+\end{Shaded}
 
 \normalsize
 
